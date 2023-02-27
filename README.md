@@ -1,2 +1,2 @@
 # stable-diffusion
-Hallooooooooo darknes my old friend
+Hallooooooooo darkness my old friend
