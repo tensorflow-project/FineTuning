@@ -25,7 +25,20 @@ from keras_cv.models.stable_diffusion.__internal__.layers.padded_conv2d import (
 
 
 class DiffusionModel(keras.Model):
-    """ the U-Net for our stable diffusion, used for downsampling and upsampling of the image starting with random noise but where is the call?"""
+     """ A U-Net model used for stable diffusion, which generates images by downsampling and then upsampling random noise. The model takes in three inputs: 
+    1. `context`, a tensor of shape `(max_text_length, 768)`, which represents contextual information.
+    2. `t_embed_input`, a tensor of shape `(320,)`, which contains time embedding information.
+    3. `latent`, a tensor of shape `(img_height // 8, img_width // 8, 4)`, which represents random noise.
+    
+    The model consists of a downsampling flow, a middle flow, an upsampling flow, and an exit flow. The downsampling flow contains several ResBlocks, each of which uses a SpatialTransformer to transform the feature maps with respect to the contextual information. The outputs of each ResBlock are saved in a list to improve the upsampling process later on. After three downsampling steps, the middle flow contains a single ResBlock, which is also transformed using a SpatialTransformer. The upsampling flow consists of three steps that each use a Concatenate layer to concatenate the output of the previous ResBlock with the saved output from the corresponding downsampling step. The concatenated tensor is then processed using another ResBlock and a SpatialTransformer, before being upsampled. Finally, the exit flow applies GroupNormalization, Swish activation, and a PaddedConv2D layer to produce the final output.
+    
+    Args:
+        img_height: Integer, height of the input image.
+        img_width: Integer, width of the input image.
+        max_text_length: Integer, maximum length of the contextual text information.
+        name: String, name of the model.
+        download_weights: Boolean, whether to download the pre-trained weights.
+    """
     def __init__(
         self,
         img_height,
@@ -215,6 +228,17 @@ class DiffusionModelV2(keras.Model):
 
 
 class ResBlock(keras.layers.Layer):
+    """
+    A residual block layer that consists of an entry flow, an embedding flow,
+    and an exit flow. The entry flow and exit flow are convolutional blocks,
+    while the embedding flow is a dense block that takes in an additional
+    input tensor. The output of the entry flow is added to the output of the
+    embedding flow, and the result is passed through the exit flow. Finally,
+    the output of the residual projection (if necessary) is added to the result.
+
+    Args:
+        output_dim (int): The number of filters for the convolutional layers determining the output dimension.
+    """
     def __init__(self, output_dim, **kwargs):
         super().__init__(**kwargs)
         self.output_dim = output_dim
@@ -234,12 +258,29 @@ class ResBlock(keras.layers.Layer):
         ]
 
     def build(self, input_shape):
+        """
+        Builds the layer by setting up the residual projection layer if needed.
+
+        Args:
+            input_shape (tuple): A tuple of two shapes, the input tensor shape and
+                                 the embedding tensor shape.
+        """
         if input_shape[0][-1] != self.output_dim:
             self.residual_projection = PaddedConv2D(self.output_dim, 1)
         else:
             self.residual_projection = lambda x: x
 
     def call(self, inputs):
+        """
+        Performs a forward pass on the layer.
+
+        Args:
+            inputs (tuple): A tuple of two tensors, the input tensor and the
+                            embedding tensor.
+
+        Returns:
+            A tensor representing the output of the residual block layer.
+        """
         inputs, embeddings = inputs
         x = inputs
         for layer in self.entry_flow:
@@ -253,7 +294,20 @@ class ResBlock(keras.layers.Layer):
 
 
 class SpatialTransformer(keras.layers.Layer):
-    """ transform the image with respect to the context embedding"""
+    """
+    Spatial transformer layer that transforms the input image with respect to the context embedding.
+    This layer applies a transformer block to the input image, conditioned on a context embedding,
+    to produce a transformed image that incorporates the contextual information.
+    
+    Args:
+        num_heads (int): Number of attention heads.
+        head_size (int): Size of each attention head.
+        fully_connected (bool): Whether to use fully connected layers for projection, 
+                                defaults to False.
+    
+    Returns:
+        The transformed image tensor.
+    """
     def __init__(self, num_heads, head_size, fully_connected=False, **kwargs):
         super().__init__(**kwargs)
         self.norm = keras.layers.GroupNormalization(epsilon=1e-5)
@@ -271,6 +325,15 @@ class SpatialTransformer(keras.layers.Layer):
             self.proj2 = PaddedConv2D(channels, 1)
 
     def call(self, inputs):
+         """
+        Applies the spatial transformer to the input image tensor.
+        
+        Args:
+            inputs (tuple): A tuple of two input tensors: the image tensor and the context embedding tensor.
+            
+        Returns:
+            The transformed image tensor.
+        """
         inputs, context = inputs
         _, h, w, c = inputs.shape
         x = self.norm(inputs)
@@ -282,6 +345,14 @@ class SpatialTransformer(keras.layers.Layer):
 
 
 class BasicTransformerBlock(keras.layers.Layer):
+     """
+    A basic Transformer block consisting of two layers of multi-head self-attention and one feedforward layer.
+
+    Args:
+        dim (int): Dimension of the input and output tensor.
+        num_heads (int): Number of attention heads.
+        head_size (int): Size of each attention head.
+    """
     def __init__(self, dim, num_heads, head_size, **kwargs):
         super().__init__(**kwargs)
         self.norm1 = keras.layers.LayerNormalization(epsilon=1e-5)
@@ -293,6 +364,17 @@ class BasicTransformerBlock(keras.layers.Layer):
         self.dense = keras.layers.Dense(dim)
 
     def call(self, inputs):
+        """Apply a basic transformer block to the inputs.
+
+        Args:
+            inputs: A tuple of two tensors, (query, context).
+                `query` has shape (batch_size, seq_len_query, dim),
+                `context` has shape (batch_size, seq_len_context, dim).
+
+        Returns:
+            A tensor with the same shape as `inputs`, representing the
+            result of applying the basic transformer block to the inputs.
+        """
         inputs, context = inputs
         x = self.attn1([self.norm1(inputs), None]) + inputs
         x = self.attn2([self.norm2(x), context]) + x
@@ -300,6 +382,18 @@ class BasicTransformerBlock(keras.layers.Layer):
 
 
 class CrossAttention(keras.layers.Layer):
+     """
+    Computes cross-attention between two sequences of input vectors.
+
+    Args:
+        num_heads (int): The number of attention heads to use.
+        head_size (int): The size of each attention head.
+    
+    Returns:
+        output (tf.Tensor): The output of the cross-attention operation, with shape
+                            `(batch_size, sequence_length, num_heads * head_size)`.
+
+    """
     def __init__(self, num_heads, head_size, **kwargs):
         super().__init__(**kwargs)
         self.to_q = keras.layers.Dense(num_heads * head_size, use_bias=False)
@@ -311,6 +405,18 @@ class CrossAttention(keras.layers.Layer):
         self.out_proj = keras.layers.Dense(num_heads * head_size)
 
     def call(self, inputs):
+        """
+        Computes the cross-attention between two sequences of input vectors.
+
+        Args:
+            inputs (tuple): A tuple containing two input tensors:
+                            `inputs` - The input tensor to the query layer with shape `(batch_size, sequence_length, input_size)`.
+                            `context` - The input tensor to the key and value layers with shape `(batch_size, sequence_length, input_size)`.
+
+        Returns:
+            output (tf.Tensor): The output of the cross-attention operation, with shape
+                                `(batch_size, sequence_length, num_heads * head_size)`.
+        """
         inputs, context = inputs
         context = inputs if context is None else context
         q, k, v = self.to_q(inputs), self.to_k(context), self.to_v(context)
@@ -341,22 +447,67 @@ class CrossAttention(keras.layers.Layer):
 
 
 class Upsample(keras.layers.Layer):
+     """
+    Upsamples the spatial dimensions of a tensor by a factor of 2 and applies a 3x3 convolution.
+
+    Args:
+        channels (int): The number of output channels in the convolutional layer.
+
+    Input shape:
+        A 4D tensor with shape `(batch_size, height, width, channels)`.
+
+    Output shape:
+        A 4D tensor with shape `(batch_size, 2*height, 2*width, channels)`.
+
+    """
     def __init__(self, channels, **kwargs):
         super().__init__(**kwargs)
         self.ups = keras.layers.UpSampling2D(2)
         self.conv = PaddedConv2D(channels, 3, padding=1)
 
     def call(self, inputs):
+        """
+        Applies upsampling and convolution to the input tensor.
+
+        Args:
+            inputs: A 4D tensor with shape `(batch_size, height, width, channels)`.
+
+        Returns:
+            A 4D tensor with shape `(batch_size, 2*height, 2*width, channels)`.
+        """
         return self.conv(self.ups(inputs))
 
 
 class GEGLU(keras.layers.Layer):
+     """
+    Gated Linear Unit with Gaussian Error Linear Units (GEGLU) activation function.
+    This layer applies a dense layer followed by the GEGLU activation function to its inputs.
+
+    Args:
+        output_dim (int): dimensionality of the output space.
+
+    Input shape:
+        2D tensor of shape `(batch_size, input_dim)`.
+
+    Output shape:
+        2D tensor of shape `(batch_size, output_dim)`.
+        
+    """
     def __init__(self, output_dim, **kwargs):
         super().__init__(**kwargs)
         self.output_dim = output_dim
         self.dense = keras.layers.Dense(output_dim * 2)
 
     def call(self, inputs):
+         """
+        Apply GEGLU activation function to inputs.
+
+        Args:
+            inputs (tensor): Input tensor of shape `(batch_size, input_dim)`.
+
+        Returns:
+            tensor: A tensor of shape `(batch_size, output_dim)` after applying the GEGLU activation function.
+        """
         x = self.dense(inputs)
         x, gate = x[..., : self.output_dim], x[..., self.output_dim :]
         tanh_res = keras.activations.tanh(
@@ -366,6 +517,15 @@ class GEGLU(keras.layers.Layer):
 
 
 def td_dot(a, b):
+    """Computes the dot product between two tensors, where the last two dimensions of both tensors are contracted.
+
+    Args:
+        a: A tensor with shape (batch_size, num_elements_a, dim_a1, dim_a2).
+        b: A tensor with shape (batch_size, num_elements_b, dim_b1, dim_b2).
+
+    Returns:
+        A tensor with shape (batch_size, num_elements_a, dim_a1, dim_b2).
+    """
     aa = tf.reshape(a, (-1, a.shape[2], a.shape[3]))
     bb = tf.reshape(b, (-1, b.shape[2], b.shape[3]))
     cc = keras.backend.batch_dot(aa, bb)
