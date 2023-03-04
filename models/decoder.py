@@ -30,7 +30,16 @@ from keras_cv.models.stable_diffusion.__internal__.layers.resnet_block import (
 
 
 class Decoder(keras.Sequential):
-    """ gets the latent space as in input and generates the final output image from it"""
+    """
+    A Keras Sequential model that takes a latent space as input and generates a final output image from it.
+
+    Args:
+        img_height (int): The height of the output image.
+        img_width (int): The width of the output image.
+        name (str, optional): The name of the model. Defaults to None.
+        download_weights (bool, optional): Whether to download pre-trained weights for the model. 
+            Defaults to True.
+    """
     def __init__(self, img_height, img_width, name=None, download_weights=True):
         super().__init__(
             [
