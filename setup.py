@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='stable-diffusion', # replace with the name of your package
+    name='stable', # replace with the name of your package
     version='0.1', # replace with the version of your package
     packages=find_packages(),
     install_requires=[
