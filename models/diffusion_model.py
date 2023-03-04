@@ -30,7 +30,14 @@ class DiffusionModel(keras.Model):
     2. `t_embed_input`, a tensor of shape `(320,)`, which contains time embedding information.
     3. `latent`, a tensor of shape `(img_height // 8, img_width // 8, 4)`, which represents random noise.
     
-    The model consists of a downsampling flow, a middle flow, an upsampling flow, and an exit flow. The downsampling flow contains several ResBlocks, each of which uses a SpatialTransformer to transform the feature maps with respect to the contextual information. The outputs of each ResBlock are saved in a list to improve the upsampling process later on. After three downsampling steps, the middle flow contains a single ResBlock, which is also transformed using a SpatialTransformer. The upsampling flow consists of three steps that each use a Concatenate layer to concatenate the output of the previous ResBlock with the saved output from the corresponding downsampling step. The concatenated tensor is then processed using another ResBlock and a SpatialTransformer, before being upsampled. Finally, the exit flow applies GroupNormalization, Swish activation, and a PaddedConv2D layer to produce the final output.
+    The model consists of a downsampling flow, a middle flow, an upsampling flow, and an exit flow. 
+    The downsampling flow contains several ResBlocks, each of which uses a SpatialTransformer to transform the feature maps with respect to the contextual information. 
+    The outputs of each ResBlock are saved in a list to improve the upsampling process later on. 
+    After three downsampling steps, the middle flow contains a single ResBlock, which is also transformed using a SpatialTransformer. 
+    The upsampling flow consists of three steps that each use a Concatenate layer to concatenate the output of the previous ResBlock 
+    with the saved output from the corresponding downsampling step. 
+    The concatenated tensor is then processed using another ResBlock and a SpatialTransformer, before being upsampled. 
+    Finally, the exit flow applies GroupNormalization, Swish activation, and a PaddedConv2D layer to produce the final output.
     
     Args:
         img_height: Integer, height of the input image.
