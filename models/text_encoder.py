@@ -99,7 +99,7 @@ def quick_gelu(x):
 
 
 class CLIPEmbedding(keras.layers.Layer):
-     """Layer that creates embeddings for tokens and positions and combines them.
+    """Layer that creates embeddings for tokens and positions and combines them.
 
     Args:
         input_dim (int, optional): Size of the vocabulary. Defaults to 49408.
@@ -125,7 +125,7 @@ class CLIPEmbedding(keras.layers.Layer):
 
 
 class CLIPEncoderLayer(keras.layers.Layer):
-     """
+    """
     A single encoder layer in the CLIP model architecture that processes the input data with a self-attention
     mechanism followed by a feedforward neural network, while preserving the input with residual connections.
 
@@ -220,7 +220,7 @@ class CLIPAttention(keras.layers.Layer):
         )  # bs, heads, sequence_length, head_dim
 
     def call(self, inputs, attention_mask=None):
-         """
+        """
         Performs the attention calculation to get the attention weights and embeddings.
 
         Args:
@@ -229,7 +229,6 @@ class CLIPAttention(keras.layers.Layer):
 
         Returns:
             Tensor: The embeddings of the output.
-
         """
         if attention_mask is None and self.causal:
             length = tf.shape(inputs)[1]
