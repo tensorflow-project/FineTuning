@@ -25,7 +25,7 @@ from keras_cv.models.stable_diffusion.__internal__.layers.padded_conv2d import (
 
 
 class DiffusionModel(keras.Model):
-    """ A U-Net model used for stable diffusion, which generates images by downsampling and then upsampling random noise. The model takes in three inputs: 
+    """A U-Net model used for stable diffusion, which generates images by downsampling and then upsampling random noise. The model takes in three inputs: 
     1. `context`, a tensor of shape `(max_text_length, 768)`, which represents contextual information.
     2. `t_embed_input`, a tensor of shape `(320,)`, which contains time embedding information.
     3. `latent`, a tensor of shape `(img_height // 8, img_width // 8, 4)`, which represents random noise.
@@ -40,11 +40,11 @@ class DiffusionModel(keras.Model):
     Finally, the exit flow applies GroupNormalization, Swish activation, and a PaddedConv2D layer to produce the final output.
     
     Args:
-        img_height: Integer, height of the input image.
-        img_width: Integer, width of the input image.
-        max_text_length: Integer, maximum length of the contextual text information.
-        name: String, name of the model.
-        download_weights: Boolean, whether to download the pre-trained weights.
+    - img_height: Integer, height of the input image.
+    - img_width: Integer, width of the input image.
+    - max_text_length: Integer, maximum length of the contextual text information.
+    - name: String, name of the model.
+    - download_weights: Boolean, whether to download the pre-trained weights.
     """
     def __init__(
         self,
@@ -235,8 +235,7 @@ class DiffusionModelV2(keras.Model):
 
 
 class ResBlock(keras.layers.Layer):
-    """
-    A residual block layer that consists of an entry flow, an embedding flow,
+    """A residual block layer that consists of an entry flow, an embedding flow,
     and an exit flow. The entry flow and exit flow are convolutional blocks,
     while the embedding flow is a dense block that takes in an additional
     input tensor. The output of the entry flow is added to the output of the
@@ -244,7 +243,7 @@ class ResBlock(keras.layers.Layer):
     the output of the residual projection (if necessary) is added to the result.
 
     Args:
-        output_dim (int): The number of filters for the convolutional layers determining the output dimension.
+    - output_dim (int): The number of filters for the convolutional layers determining the output dimension
     """
     def __init__(self, output_dim, **kwargs):
         super().__init__(**kwargs)
