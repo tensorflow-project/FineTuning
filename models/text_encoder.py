@@ -31,8 +31,7 @@ class TextEncoder(keras.Model):
     - max_length (int): Maximum length of the input text sequence
     - vocab_size (int, optional): Size of the vocabulary. Defaults to 49408
     - name (str, optional): Name of the model. Defaults to None
-    - download_weights (bool, optional): Whether to download pre-trained weights 
-            Defaults to True
+    - download_weights (bool, optional): Whether to download pre-trained weights. Defaults to True
 
     Attributes:
     - tokens (keras.layers.Input): Input layer for the text tokens
@@ -102,12 +101,12 @@ class CLIPEmbedding(keras.layers.Layer):
     """Layer that creates embeddings for tokens and positions and combines them.
 
     Args:
-        input_dim (int, optional): Size of the vocabulary. Defaults to 49408.
-        output_dim (int, optional): Dimension of the output embeddings. Defaults to 768.
-        max_length (int, optional): Maximum length of input sequences. Defaults to 77.
+    - input_dim (int, optional): Size of the vocabulary. Defaults to 49408
+    - output_dim (int, optional): Dimension of the output embeddings. Defaults to 768
+    - max_length (int, optional): Maximum length of input sequences. Defaults to 77
 
     Returns:
-        tf.Tensor: Combined embeddings of tokens and positions.
+    - tf.Tensor: Combined embeddings of tokens and positions
     """
     def __init__(self, input_dim=49408, output_dim=768, max_length=77, **kwargs):
         super().__init__(**kwargs)
@@ -125,17 +124,16 @@ class CLIPEmbedding(keras.layers.Layer):
 
 
 class CLIPEncoderLayer(keras.layers.Layer):
-    """
-    A single encoder layer in the CLIP model architecture that processes the input data with a self-attention
+    """A single encoder layer in the CLIP model architecture that processes the input data with a self-attention
     mechanism followed by a feedforward neural network, while preserving the input with residual connections.
 
     Args:
-        embed_dim (int): The dimension of the embedding space.
-        num_heads (int): The number of heads in the self-attention mechanism.
-        activation (function, optional): Activation function to use. If not specified, no activation is applied.
+    - embed_dim (int): The dimension of the embedding space
+    - num_heads (int): The number of heads in the self-attention mechanism
+    - activation (function, optional): Activation function to use. If not specified, no activation is applied
 
     Returns:
-        Tensor: The output tensor of the encoder layer.
+    - Tensor: The output tensor of the encoder layer
     """
     def __init__(self, embed_dim, num_heads, activation=None, **kwargs):
         super().__init__(**kwargs)
@@ -162,28 +160,20 @@ class CLIPEncoderLayer(keras.layers.Layer):
 
 
 class CLIPAttention(keras.layers.Layer):
-    """
-    Layer that performs attention calculation to get the attention weights and embeddings.
+    """Layer that performs attention calculation to get the attention weights and embeddings.
 
     Args:
-        embed_dim (int): The size of the embedding dimension. Default is 768.
-        num_heads (int): The number of attention heads. Default is 12.
-        causal (bool): Whether to attend only to tokens before the current one or to all tokens. Default is True.
+    - embed_dim (int): The size of the embedding dimension. Default is 768
+    - num_heads (int): The number of attention heads. Default is 12
+    - causal (bool): Whether to attend only to tokens before the current one or to all tokens. Default is True
 
     Attributes:
-        q_proj (Dense): Layer that projects the input to the query states.
-        k_proj (Dense): Layer that projects the input to the key states.
-        v_proj (Dense): Layer that projects the input to the value states.
-        out_proj (Dense): Layer that projects the attention output to the final output.
-        head_dim (int): The size of the embedding dimension divided by the number of attention heads.
-        scale (float): Scaling factor for the attention weights.
-
-    Methods:
-        reshape_states(x, sequence_length, batch_size):
-            Reshapes the different states for later matrix multiplication.
-        call(inputs, attention_mask=None):
-            Performs the attention calculation to get the attention weights and embeddings.
-
+    - q_proj (Dense): Layer that projects the input to the query states
+    - k_proj (Dense): Layer that projects the input to the key states
+    - v_proj (Dense): Layer that projects the input to the value states
+    - out_proj (Dense): Layer that projects the attention output to the final output
+    - head_dim (int): The size of the embedding dimension divided by the number of attention heads
+    - scale (float): Scaling factor for the attention weights
     """
     def __init__(self, embed_dim=768, num_heads=12, causal=True, **kwargs):
         super().__init__(**kwargs)
@@ -200,17 +190,15 @@ class CLIPAttention(keras.layers.Layer):
         self.out_proj = keras.layers.Dense(self.embed_dim)
 
     def reshape_states(self, x, sequence_length, batch_size):
-        """
-        Reshapes the different states for later matrix multiplication.
+        """Reshapes the different states for later matrix multiplication.
 
         Args:
-            x (Tensor): Input tensor to be reshaped.
-            sequence_length (int): Length of the input sequence.
-            batch_size (int): Batch size of the input sequence.
+        - x (Tensor): Input tensor to be reshaped
+        - sequence_length (int): Length of the input sequence
+        - batch_size (int): Batch size of the input sequence
 
         Returns:
-            Tensor: Reshaped tensor.
-
+        - Tensor: Reshaped tensor
         """
         x = tf.reshape(
             x, (batch_size, sequence_length, self.num_heads, self.head_dim)
@@ -220,15 +208,14 @@ class CLIPAttention(keras.layers.Layer):
         )  # bs, heads, sequence_length, head_dim
 
     def call(self, inputs, attention_mask=None):
-        """
-        Performs the attention calculation to get the attention weights and embeddings.
+        """Performs the attention calculation to get the attention weights and embeddings.
 
         Args:
-            inputs (Tensor): Input tensor to be processed.
-            attention_mask (Tensor): Attention mask tensor for masking the tokens. Default is None.
+        - inputs (Tensor): Input tensor to be processed
+        - attention_mask (Tensor): Attention mask tensor for masking the tokens. Default is None
 
         Returns:
-            Tensor: The embeddings of the output.
+        - Tensor: The embeddings of the output
         """
         if attention_mask is None and self.causal:
             length = tf.shape(inputs)[1]
