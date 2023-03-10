@@ -25,49 +25,49 @@ class TextEncoder(keras.Model):
     """Transformer-based text encoder for the OpenAI CLIP model.
 
     This class constructs a text encoder with 12 Transformer layers with the 
-    embedding dimension 768 and 12 attention heads with quick_gelu activation.
+    embedding dimension 768 and 12 attention heads with quick_gelu activation
 
     Args:
-        max_length (int): Maximum length of the input text sequence.
-        vocab_size (int, optional): Size of the vocabulary. Defaults to 49408.
-        name (str, optional): Name of the model. Defaults to None
-        download_weights (bool, optional): Whether to download pre-trained weights 
+    - max_length (int): Maximum length of the input text sequence
+    - vocab_size (int, optional): Size of the vocabulary. Defaults to 49408
+    - name (str, optional): Name of the model. Defaults to None
+    - download_weights (bool, optional): Whether to download pre-trained weights 
             Defaults to True
 
     Attributes:
-        tokens (keras.layers.Input): Input layer for the text tokens
-        positions (keras.layers.Input): Input layer for the token positions
+    - tokens (keras.layers.Input): Input layer for the text tokens
+    - positions (keras.layers.Input): Input layer for the token positions
 
     Raises:
-        ValueError: If max_length is less than or equal to 0
+    - ValueError: If max_length is less than or equal to 0
 
     """
     def __init__(self, max_length, vocab_size=49408, name=None, download_weights=True):  
      
-        tokens = keras.layers.Input(
-            shape=(max_length,), dtype="int32", name="tokens"
-        )
-        positions = keras.layers.Input(
-            shape=(max_length,), dtype="int32", name="positions"
-        )
-        ### construct an embedding
-        x = CLIPEmbedding(vocab_size, 768, max_length)([tokens, positions])
-
-        ### build 12 layers with the embedding dimension 768 and 12 attention heads with quick_gelu activation
-        for _ in range(12):
-            x = CLIPEncoderLayer(768, 12, activation=quick_gelu)(x)
-
-        ### normalize the embedding
-        embedded = keras.layers.LayerNormalization(epsilon=1e-5)(x)
-        super().__init__([tokens, positions], embedded, name=name)
-        
-        ### get the weights from hugging face
-        if download_weights:
-            text_encoder_weights_fpath = keras.utils.get_file(
-                origin="https://huggingface.co/fchollet/stable-diffusion/resolve/main/kcv_encoder.h5",
-                file_hash="4789e63e07c0e54d6a34a29b45ce81ece27060c499a709d556c7755b42bb0dc4",
+            tokens = keras.layers.Input(
+                shape=(max_length,), dtype="int32", name="tokens"
             )
-            self.load_weights(text_encoder_weights_fpath)
+            positions = keras.layers.Input(
+                shape=(max_length,), dtype="int32", name="positions"
+            )
+            ### construct an embedding
+            x = CLIPEmbedding(vocab_size, 768, max_length)([tokens, positions])
+
+            ### build 12 layers with the embedding dimension 768 and 12 attention heads with quick_gelu activation
+            for _ in range(12):
+                x = CLIPEncoderLayer(768, 12, activation=quick_gelu)(x)
+
+            ### normalize the embedding
+            embedded = keras.layers.LayerNormalization(epsilon=1e-5)(x)
+            super().__init__([tokens, positions], embedded, name=name)
+
+            ### get the weights from hugging face
+            if download_weights:
+                text_encoder_weights_fpath = keras.utils.get_file(
+                    origin="https://huggingface.co/fchollet/stable-diffusion/resolve/main/kcv_encoder.h5",
+                    file_hash="4789e63e07c0e54d6a34a29b45ce81ece27060c499a709d556c7755b42bb0dc4",
+                )
+                self.load_weights(text_encoder_weights_fpath)
 
 ### same as above but different layers
 class TextEncoderV2(keras.Model):
