@@ -265,20 +265,20 @@ class ResBlock(keras.layers.Layer):
         ]
 
     def build(self, input_shape):
-    """
+        """
         Builds the layer by setting up the residual projection layer if needed.
 
         Args:
             input_shape (tuple): A tuple of two shapes, the input tensor shape and
                                  the embedding tensor shape.
-    """
+        """
         if input_shape[0][-1] != self.output_dim:
             self.residual_projection = PaddedConv2D(self.output_dim, 1)
         else:
             self.residual_projection = lambda x: x
 
     def call(self, inputs):
-    """
+        """
         Performs a forward pass on the layer.
 
         Args:
@@ -287,7 +287,7 @@ class ResBlock(keras.layers.Layer):
 
         Returns:
             A tensor representing the output of the residual block layer.
-    """
+        """
         inputs, embeddings = inputs
         x = inputs
         for layer in self.entry_flow:
