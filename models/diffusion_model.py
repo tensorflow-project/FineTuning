@@ -40,11 +40,11 @@ class DiffusionModel(keras.Model):
     Finally, the exit flow applies GroupNormalization, Swish activation, and a PaddedConv2D layer to produce the final output.
     
     Args:
-    - img_height: Integer, height of the input image.
-    - img_width: Integer, width of the input image.
-    - max_text_length: Integer, maximum length of the contextual text information.
-    - name: String, name of the model.
-    - download_weights: Boolean, whether to download the pre-trained weights.
+    - img_height (int): height of the input image.
+    - img_width (int): width of the input image.
+    - max_text_length (int): maximum length of the contextual text information.
+    - name (string): name of the model.
+    - download_weights (bool): whether to download the pre-trained weights.
     """
     def __init__(
         self,
@@ -141,6 +141,7 @@ class DiffusionModel(keras.Model):
 
 
 class DiffusionModelV2(keras.Model):
+    """ALternative to DiffusionModel"""
     def __init__(
         self,
         img_height,
@@ -264,12 +265,10 @@ class ResBlock(keras.layers.Layer):
         ]
 
     def build(self, input_shape):
-        """
-        Builds the layer by setting up the residual projection layer if needed.
+        """Builds the layer by setting up the residual projection layer if needed.
 
         Args:
-            input_shape (tuple): A tuple of two shapes, the input tensor shape and
-                                 the embedding tensor shape.
+        - input_shape (tuple): A tuple of two shapes, the input tensor shape and the embedding tensor shape
         """
         if input_shape[0][-1] != self.output_dim:
             self.residual_projection = PaddedConv2D(self.output_dim, 1)
@@ -277,15 +276,13 @@ class ResBlock(keras.layers.Layer):
             self.residual_projection = lambda x: x
 
     def call(self, inputs):
-        """
-        Performs a forward pass on the layer.
+        """Performs a forward pass on the layer.
 
         Args:
-            inputs (tuple): A tuple of two tensors, the input tensor and the
-                            embedding tensor.
+        - inputs (tuple): A tuple of two tensors, the input tensor and the embedding tensor
 
         Returns:
-            A tensor representing the output of the residual block layer.
+        - tensor representing the output of the residual block layer
         """
         inputs, embeddings = inputs
         x = inputs
