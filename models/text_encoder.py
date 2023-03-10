@@ -112,8 +112,8 @@ class CLIPEmbedding(keras.layers.Layer):
     def __init__(self, input_dim=49408, output_dim=768, max_length=77, **kwargs):
         super().__init__(**kwargs)
         
-        self.token_embedding = keras.layers.Embedding(input_dim, output_dim)
-        self.position_embedding = keras.layers.Embedding(max_length, output_dim)
+            self.token_embedding = keras.layers.Embedding(input_dim, output_dim)
+            self.position_embedding = keras.layers.Embedding(max_length, output_dim)
 
     def call(self, inputs):
         tokens, positions = inputs
