@@ -25,7 +25,7 @@ from keras_cv.models.stable_diffusion.__internal__.layers.padded_conv2d import (
 
 
 class DiffusionModel(keras.Model):
-     """ A U-Net model used for stable diffusion, which generates images by downsampling and then upsampling random noise. The model takes in three inputs: 
+    """ A U-Net model used for stable diffusion, which generates images by downsampling and then upsampling random noise. The model takes in three inputs: 
     1. `context`, a tensor of shape `(max_text_length, 768)`, which represents contextual information.
     2. `t_embed_input`, a tensor of shape `(320,)`, which contains time embedding information.
     3. `latent`, a tensor of shape `(img_height // 8, img_width // 8, 4)`, which represents random noise.
@@ -265,20 +265,20 @@ class ResBlock(keras.layers.Layer):
         ]
 
     def build(self, input_shape):
-        """
+    """
         Builds the layer by setting up the residual projection layer if needed.
 
         Args:
             input_shape (tuple): A tuple of two shapes, the input tensor shape and
                                  the embedding tensor shape.
-        """
+    """
         if input_shape[0][-1] != self.output_dim:
             self.residual_projection = PaddedConv2D(self.output_dim, 1)
         else:
             self.residual_projection = lambda x: x
 
     def call(self, inputs):
-        """
+    """
         Performs a forward pass on the layer.
 
         Args:
@@ -287,7 +287,7 @@ class ResBlock(keras.layers.Layer):
 
         Returns:
             A tensor representing the output of the residual block layer.
-        """
+    """
         inputs, embeddings = inputs
         x = inputs
         for layer in self.entry_flow:
@@ -332,7 +332,7 @@ class SpatialTransformer(keras.layers.Layer):
             self.proj2 = PaddedConv2D(channels, 1)
 
     def call(self, inputs):
-         """
+        """
         Applies the spatial transformer to the input image tensor.
         
         Args:
@@ -352,7 +352,7 @@ class SpatialTransformer(keras.layers.Layer):
 
 
 class BasicTransformerBlock(keras.layers.Layer):
-     """
+    """
     A basic Transformer block consisting of two layers of multi-head self-attention and one feedforward layer.
 
     Args:
@@ -389,7 +389,7 @@ class BasicTransformerBlock(keras.layers.Layer):
 
 
 class CrossAttention(keras.layers.Layer):
-     """
+    """
     Computes cross-attention between two sequences of input vectors.
 
     Args:
@@ -399,7 +399,6 @@ class CrossAttention(keras.layers.Layer):
     Returns:
         output (tf.Tensor): The output of the cross-attention operation, with shape
                             `(batch_size, sequence_length, num_heads * head_size)`.
-
     """
     def __init__(self, num_heads, head_size, **kwargs):
         super().__init__(**kwargs)
@@ -454,7 +453,7 @@ class CrossAttention(keras.layers.Layer):
 
 
 class Upsample(keras.layers.Layer):
-     """
+    """
     Upsamples the spatial dimensions of a tensor by a factor of 2 and applies a 3x3 convolution.
 
     Args:
@@ -465,7 +464,6 @@ class Upsample(keras.layers.Layer):
 
     Output shape:
         A 4D tensor with shape `(batch_size, 2*height, 2*width, channels)`.
-
     """
     def __init__(self, channels, **kwargs):
         super().__init__(**kwargs)
@@ -486,7 +484,7 @@ class Upsample(keras.layers.Layer):
 
 
 class GEGLU(keras.layers.Layer):
-     """
+    """
     Gated Linear Unit with Gaussian Error Linear Units (GEGLU) activation function.
     This layer applies a dense layer followed by the GEGLU activation function to its inputs.
 
@@ -498,7 +496,6 @@ class GEGLU(keras.layers.Layer):
 
     Output shape:
         2D tensor of shape `(batch_size, output_dim)`.
-        
     """
     def __init__(self, output_dim, **kwargs):
         super().__init__(**kwargs)
@@ -506,7 +503,7 @@ class GEGLU(keras.layers.Layer):
         self.dense = keras.layers.Dense(output_dim * 2)
 
     def call(self, inputs):
-         """
+        """
         Apply GEGLU activation function to inputs.
 
         Args:
