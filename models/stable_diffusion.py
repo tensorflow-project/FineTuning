@@ -129,7 +129,7 @@ class StableDiffusionBase:
         `StableDiffusion.encode_text`.
 
         Args:
-        -encoded_text (tensor): When the batch axis is omitted, the same encoded
+        - encoded_text (tensor): When the batch axis is omitted, the same encoded
             text will be used to produce every generated image
         - batch_size (int): number of images to generate. Default: 1
         - negative_prompt (string): A string containing information to negatively guide the image generation (e.g. by removing or altering certain aspects
