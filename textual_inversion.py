@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
 get_ipython().system('pip install -q git+https://github.com/keras-team/keras-cv.git')
 get_ipython().system('pip install -q tensorflow==2.11.0')
 get_ipython().system('pip install pyyaml h5py')
@@ -11,10 +8,6 @@ get_ipython().system('pip install pyyaml h5py')
 ### clone our Github Repository
 get_ipython().system('git clone https://github.com/tensorflow-project/FineTuning')
 get_ipython().run_line_magic('cd', 'FineTuning/models')
-
-
-# In[ ]:
-
 
 import math
 import random
@@ -43,9 +36,6 @@ from stable_diffusion import StableDiffusion
 stable_diffusion = StableDiffusion()
 
 
-# In[ ]:
-
-
 def plot_images(images):
     """function to plot images in subplots
      Args: 
@@ -56,9 +46,6 @@ def plot_images(images):
         ax = plt.subplot(1, len(images), i + 1)
         plt.imshow(images[i])
         plt.axis("off")
-
-
-# In[ ]:
 
 
 def assemble_image_dataset(urls):
@@ -108,9 +95,6 @@ def assemble_image_dataset(urls):
     return image_dataset
 
 
-# In[ ]:
-
-
 MAX_PROMPT_LENGTH = 77
 
 ### our new concept which is later inserted in the different prompts (for training and image generation).
@@ -157,9 +141,6 @@ def assemble_text_dataset(prompts, placeholder_token):
     return text_dataset
 
 
-# In[ ]:
-
-
 def assemble_dataset(urls, prompts, placeholder_token):
     """ Assembles a TensorFlow Dataset containing pairs of images and text prompts.
 
@@ -184,9 +165,6 @@ def assemble_dataset(urls, prompts, placeholder_token):
     # we have found that this anecdotally improves results.
     text_dataset = text_dataset.repeat(5)
     return tf.data.Dataset.zip((image_dataset, text_dataset))
-
-
-# In[ ]:
 
 
 ### create a dataset consisting of happy broccoli stickers and happy prompts
@@ -224,9 +202,6 @@ happy_ds = assemble_dataset(
 )
 
 
-# In[ ]:
-
-
 love_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/SqFxJfM.jpg",
@@ -260,10 +235,6 @@ love_ds = assemble_dataset(
     placeholder_token = placeholder_token
 )
 
-
-# In[ ]:
-
-
 sad_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/hlkuxBX.jpg",
@@ -296,10 +267,6 @@ sad_ds = assemble_dataset(
     ],
     placeholder_token=placeholder_token
 )
-
-
-# In[ ]:
-
 
 angry_ds = assemble_dataset(
     urls = [
@@ -346,10 +313,6 @@ angry_ds = assemble_dataset(
     placeholder_token = placeholder_token,
 )
 
-
-# In[ ]:
-
-
 ### concatenate the different datasets with the different emotions
 positive_ds = happy_ds.concatenate(love_ds)
 negative_ds = sad_ds.concatenate(angry_ds)
@@ -357,10 +320,6 @@ train_ds = positive_ds.concatenate(negative_ds)
 train_ds = train_ds.batch(1).shuffle(
     train_ds.cardinality(), reshuffle_each_iteration=True
 )
-
-
-# In[ ]:
-
 
 ### defining concept we want to build our new concept on
 tokenized_initializer = stable_diffusion.tokenizer.encode("broccoli")[1]
@@ -383,9 +342,6 @@ old_token_weights = old_token_weights[0]
 ### expand the dimension to be able to concatenate it with old_token_weights
 new_weights = np.expand_dims(new_weights, axis=0)
 new_weights = np.concatenate([old_token_weights, new_weights], axis=0)
-
-
-# In[ ]:
 
 
 # Have to set download_weights False so we can initialize the weigths ourselves
@@ -412,10 +368,6 @@ new_encoder.layers[2].position_embedding.set_weights(old_position_weights)
 ### thus the stable_diffusion.text_encoder has the adjusted weights
 stable_diffusion._text_encoder = new_encoder
 stable_diffusion._text_encoder.compile(jit_compile=True)
-
-
-# In[ ]:
-
 
 ### we only train the encoder as we want to fine-tune the embeddings
 stable_diffusion.diffusion_model.trainable = False
@@ -452,9 +404,6 @@ for layer in traverse_layers(stable_diffusion.text_encoder):
 new_encoder.layers[2].position_embedding.trainable = False
 
 
-# In[ ]:
-
-
 ### put all the different components of stable diffusion model into a list
 all_models = [
     stable_diffusion.text_encoder,
@@ -464,9 +413,6 @@ all_models = [
 
 ### check that only in the text encoder we have trainable weights
 print([[w.shape for w in model.trainable_weights] for model in all_models])
-
-
-# In[ ]:
 
 
 # Remove the top layer from the encoder, which cuts off the variance and only returns the mean
@@ -538,10 +484,6 @@ def get_position_ids():
     position_ids = tf.convert_to_tensor([positions], dtype=tf.int32)
     
     return position_ids
-
-
-# In[ ]:
-
 
 @tf.function
 def textual_inversion(model, noise_scheduler, data):
@@ -620,9 +562,6 @@ def textual_inversion(model, noise_scheduler, data):
         return {"loss": loss}
 
 
-# In[ ]:
-
-
 ### beta is the diffusion rate 
 noise_scheduler = NoiseScheduler(
     ### beta_start determines the amount of noise added at the start of the denoising process
@@ -646,17 +585,9 @@ optimizer = keras.optimizers.Adam(
     weight_decay=0.004, learning_rate=1e-4, epsilon=1e-8, global_clipnorm=10
 )
 
-
-# In[ ]:
-
-
 def cosine_sim(e1, e2):
   sim = dot(e1, e2)/(norm(e1)*norm(e2))
   return sim
-
-
-# In[ ]:
-
 
 def get_embedding(token):
   tokenized = stable_diffusion.tokenizer.encode(token)[1]
@@ -665,16 +596,10 @@ def get_embedding(token):
   return embedding
 
 
-# In[ ]:
-
-
 sticker_embedding = []
 cosine_similarity = []
 broccoli = get_embedding("broccoli")
 cosine_similarity.append(cosine_sim(broccoli, get_embedding(placeholder_token)))
-
-
-# In[ ]:
 
 
 def training(epoch=5, model=stable_diffusion, data = train_ds):
