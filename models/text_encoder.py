@@ -43,8 +43,7 @@ class TextEncoder(keras.Model):
         ValueError: If max_length is less than or equal to 0.
 
     """
-    def __init__(
-        self, max_length, vocab_size=49408, name=None, download_weights=True):  
+    def __init__(self, max_length, vocab_size=49408, name=None, download_weights=True):  
      
         tokens = keras.layers.Input(
             shape=(max_length,), dtype="int32", name="tokens"
