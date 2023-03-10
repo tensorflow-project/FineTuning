@@ -329,7 +329,7 @@ class SpatialTransformer(keras.layers.Layer):
         - inputs (tuple): A tuple of two input tensors: the image tensor and the context embedding tensor
             
         Returns:
-        - (tensor) the transformed image tensor
+        - (tensor) The transformed image tensor
         """
         inputs, context = inputs
         _, h, w, c = inputs.shape
@@ -363,10 +363,10 @@ class BasicTransformerBlock(keras.layers.Layer):
         """Apply a basic transformer block to the inputs.
 
         Args:
-        - inputs (tuple): tuple of two tensors, (query, context)
+        - inputs (tuple): Tuple of two tensors (query, context)
 
         Returns:
-        - tensor with the same shape as `inputs`, representing the result of applying the basic transformer block to the inputs
+        - Tensor with the same shape as `inputs`, representing the result of applying the basic transformer block to the inputs
         """
         inputs, context = inputs
         x = self.attn1([self.norm1(inputs), None]) + inputs
@@ -473,7 +473,7 @@ class GEGLU(keras.layers.Layer):
         - inputs (tensor): Input tensor 
 
         Returns:
-        - tensor: A tensor after applying the GEGLU activation function.
+        - tensor: A tensor after applying the GEGLU activation function
         """
         x = self.dense(inputs)
         x, gate = x[..., : self.output_dim], x[..., self.output_dim :]
@@ -487,11 +487,11 @@ def td_dot(a, b):
     """Computes the dot product between two tensors, where the last two dimensions of both tensors are contracted.
 
     Args:
-    - a: A tensor with shape (batch_size, num_elements_a, dim_a1, dim_a2).
-    - b: A tensor with shape (batch_size, num_elements_b, dim_b1, dim_b2).
+    - a: A tensor with shape (batch_size, num_elements_a, dim_a1, dim_a2)
+    - b: A tensor with shape (batch_size, num_elements_b, dim_b1, dim_b2)
 
     Returns:
-    - a tensor with shape (batch_size, num_elements_a, dim_a1, dim_b2).
+    - A tensor with shape (batch_size, num_elements_a, dim_a1, dim_b2)
     """
     aa = tf.reshape(a, (-1, a.shape[2], a.shape[3]))
     bb = tf.reshape(b, (-1, b.shape[2], b.shape[3]))
