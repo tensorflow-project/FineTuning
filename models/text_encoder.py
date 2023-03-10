@@ -22,8 +22,7 @@ from tensorflow.experimental import numpy as tfnp
 
 
 class TextEncoder(keras.Model):
-     """
-    Transformer-based text encoder for the OpenAI CLIP model.
+    """Transformer-based text encoder for the OpenAI CLIP model.
 
     This class constructs a text encoder with 12 Transformer layers with the 
     embedding dimension 768 and 12 attention heads with quick_gelu activation.
@@ -31,16 +30,16 @@ class TextEncoder(keras.Model):
     Args:
         max_length (int): Maximum length of the input text sequence.
         vocab_size (int, optional): Size of the vocabulary. Defaults to 49408.
-        name (str, optional): Name of the model. Defaults to None.
-        download_weights (bool, optional): Whether to download pre-trained weights. 
-            Defaults to True.
+        name (str, optional): Name of the model. Defaults to None
+        download_weights (bool, optional): Whether to download pre-trained weights 
+            Defaults to True
 
     Attributes:
-        tokens (keras.layers.Input): Input layer for the text tokens.
-        positions (keras.layers.Input): Input layer for the token positions.
+        tokens (keras.layers.Input): Input layer for the text tokens
+        positions (keras.layers.Input): Input layer for the token positions
 
     Raises:
-        ValueError: If max_length is less than or equal to 0.
+        ValueError: If max_length is less than or equal to 0
 
     """
     def __init__(self, max_length, vocab_size=49408, name=None, download_weights=True):  
