@@ -6,8 +6,8 @@ get_ipython().system('pip install -q tensorflow==2.11.0')
 get_ipython().system('pip install pyyaml h5py')
 
 ### clone our Github Repository
-get_ipython().system('git clone https://github.com/tensorflow-project/FineTuning')
-get_ipython().run_line_magic('cd', 'FineTuning/models')
+#get_ipython().system('git clone https://github.com/tensorflow-project/FineTuning')
+#get_ipython().run_line_magic('cd', 'FineTuning/models')
 
 import math
 import random
@@ -26,11 +26,14 @@ from google.colab import drive
 from PIL import Image
 
 ### import the different models from our Github repository
-from text_encoder import TextEncoder
-from decoder import Decoder
-from diffusion_model import DiffusionModel
-from stable_diffusion import StableDiffusion
-
+#from text_encoder import TextEncoder
+#from decoder import Decoder
+#from diffusion_model import DiffusionModel
+#from stable_diffusion import StableDiffusion
+from models import TextEncoder
+from models import Decoder
+from models import DiffusionModel
+from models import StableDiffusion
 
 ### create an instance of the StableDiffusion() class
 stable_diffusion = StableDiffusion()
