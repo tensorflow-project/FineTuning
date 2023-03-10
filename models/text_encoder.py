@@ -44,30 +44,30 @@ class TextEncoder(keras.Model):
     """
     def __init__(self, max_length, vocab_size=49408, name=None, download_weights=True):  
      
-            tokens = keras.layers.Input(
-                shape=(max_length,), dtype="int32", name="tokens"
+        tokens = keras.layers.Input(
+            shape=(max_length,), dtype="int32", name="tokens"
+        )
+        positions = keras.layers.Input(
+            shape=(max_length,), dtype="int32", name="positions"
+        )
+        ### construct an embedding
+        x = CLIPEmbedding(vocab_size, 768, max_length)([tokens, positions])
+
+        ### build 12 layers with the embedding dimension 768 and 12 attention heads with quick_gelu activation
+        for _ in range(12):
+            x = CLIPEncoderLayer(768, 12, activation=quick_gelu)(x)
+
+        ### normalize the embedding
+        embedded = keras.layers.LayerNormalization(epsilon=1e-5)(x)
+        super().__init__([tokens, positions], embedded, name=name)
+
+        ### get the weights from hugging face
+        if download_weights:
+            text_encoder_weights_fpath = keras.utils.get_file(
+                origin="https://huggingface.co/fchollet/stable-diffusion/resolve/main/kcv_encoder.h5",
+                file_hash="4789e63e07c0e54d6a34a29b45ce81ece27060c499a709d556c7755b42bb0dc4",
             )
-            positions = keras.layers.Input(
-                shape=(max_length,), dtype="int32", name="positions"
-            )
-            ### construct an embedding
-            x = CLIPEmbedding(vocab_size, 768, max_length)([tokens, positions])
-
-            ### build 12 layers with the embedding dimension 768 and 12 attention heads with quick_gelu activation
-            for _ in range(12):
-                x = CLIPEncoderLayer(768, 12, activation=quick_gelu)(x)
-
-            ### normalize the embedding
-            embedded = keras.layers.LayerNormalization(epsilon=1e-5)(x)
-            super().__init__([tokens, positions], embedded, name=name)
-
-            ### get the weights from hugging face
-            if download_weights:
-                text_encoder_weights_fpath = keras.utils.get_file(
-                    origin="https://huggingface.co/fchollet/stable-diffusion/resolve/main/kcv_encoder.h5",
-                    file_hash="4789e63e07c0e54d6a34a29b45ce81ece27060c499a709d556c7755b42bb0dc4",
-                )
-                self.load_weights(text_encoder_weights_fpath)
+            self.load_weights(text_encoder_weights_fpath)
 
 ### same as above but different layers
 class TextEncoderV2(keras.Model):
@@ -110,10 +110,9 @@ class CLIPEmbedding(keras.layers.Layer):
     Returns:
         tf.Tensor: Combined embeddings of tokens and positions.
     """
-    def __init__(
-        self, input_dim=49408, output_dim=768, max_length=77, **kwargs
-    ):
+    def __init__(self, input_dim=49408, output_dim=768, max_length=77, **kwargs):
         super().__init__(**kwargs)
+        
         self.token_embedding = keras.layers.Embedding(input_dim, output_dim)
         self.position_embedding = keras.layers.Embedding(max_length, output_dim)
 
