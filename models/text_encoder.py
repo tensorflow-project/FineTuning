@@ -71,9 +71,8 @@ class TextEncoder(keras.Model):
 
 ### same as above but different layers
 class TextEncoderV2(keras.Model):
-    def __init__(
-        self, max_length, vocab_size=49408, name=None, download_weights=True
-    ):
+    def __init__(self, max_length, vocab_size=49408, name=None, download_weights=True):
+        
         tokens = keras.layers.Input(
             shape=(max_length,), dtype="int32", name="tokens"
         )
