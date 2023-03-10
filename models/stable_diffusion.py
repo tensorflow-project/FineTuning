@@ -96,17 +96,7 @@ class StableDiffusionBase:
         between two prompts.
 
         Args:
-            prompt: a string to encode, must be 77 tokens or shorter.
-
-        Example:
-
-        ```python
-        from keras_cv.models import StableDiffusion
-
-        model = StableDiffusion(img_height=512, img_width=512, jit_compile=True)
-        encoded_text  = model.encode_text("Tacos at dawn")
-        img = model.generate_image(encoded_text)
-        ```
+        - prompt (string): a string to encode, must be 77 tokens or shorter
         """
         # Tokenize prompt (i.e. starting context)
         inputs = self.tokenizer.encode(prompt)
@@ -139,42 +129,18 @@ class StableDiffusionBase:
         `StableDiffusion.encode_text`.
 
         Args:
-            encoded_text: Tensor of shape (`batch_size`, 77, 768), or a Tensor
-            of shape (77, 768). When the batch axis is omitted, the same encoded
-            text will be used to produce every generated image.
-            batch_size: number of images to generate. Default: 1.
-            negative_prompt: a string containing information to negatively guide
-            the image generation (e.g. by removing or altering certain aspects
-            of the generated image).
-                Default: None.
-            num_steps: number of diffusion steps (controls image quality).
-                Default: 50.
-            unconditional_guidance_scale: float controling how closely the image
-                should adhere to the prompt. Larger values result in more
-                closely adhering to the prompt, but will make the image noisier.
-                Default: 7.5.
-            diffusion_noise: Tensor of shape (`batch_size`, img_height // 8,
-                img_width // 8, 4), or a Tensor of shape (img_height // 8,
-                img_width // 8, 4). Optional custom noise to seed the diffusion
+        -encoded_text (tensor): When the batch axis is omitted, the same encoded
+            text will be used to produce every generated image
+        - batch_size (int): number of images to generate. Default: 1
+        - negative_prompt (string): A string containing information to negatively guide the image generation (e.g. by removing or altering certain aspects
+            of the generated image). Default: None
+        - num_steps (int): number of diffusion steps (controls image quality). Default: 50
+        - unconditional_guidance_scale (float): float controling how closely the image should adhere to the prompt. 
+            Larger values result in more closely adhering to the prompt, but will make the image noisier. Default: 7.5
+        - diffusion_noise (tensor, optional): Tensor. Optional custom noise to seed the diffusion
                 process. When the batch axis is omitted, the same noise will be
-                used to seed diffusion for every generated image.
-            seed: integer which is used to seed the random generation of
-                diffusion noise, only to be specified if `diffusion_noise` is
-                None.
-
-        Example:
-
-        ```python
-        from keras_cv.models import StableDiffusion
-
-        batch_size = 8
-        model = StableDiffusion(img_height=512, img_width=512, jit_compile=True)
-        e_tacos = model.encode_text("Tacos at dawn")
-        e_watermelons = model.encode_text("Watermelons at dusk")
-
-        e_interpolated = tf.linspace(e_tacos, e_watermelons, batch_size)
-        images = model.generate_image(e_interpolated, batch_size=batch_size)
-        ```
+                used to seed diffusion for every generated image
+        - seed (int): integer which is used to seed the random generation of diffusion noise, only to be specified if `diffusion_noise` is None
         """
         if diffusion_noise is not None and seed is not None:
             raise ValueError(
@@ -252,38 +218,23 @@ class StableDiffusionBase:
         verbose=True,
     ):
         """Inpaints a masked section of the provided image based on the provided prompt.
-        Note that this currently does not support mixed precision.
 
         Args:
-            prompt: A string representing the prompt for generation.
-            image: Tensor of shape (`batch_size`, `image_height`, `image_width`,
-                3) with RGB values in [0, 255]. When the batch is omitted, the same
-                image will be used as the starting image.
-            mask: Tensor of shape (`batch_size`, `image_height`, `image_width`)
-                with binary values 0 or 1. When the batch is omitted, the same mask
-                will be used on all images.
-            negative_prompt: a string containing information to negatively guide
-            the image generation (e.g. by removing or altering certain aspects
-            of the generated image).
-                Default: None.
-            num_resamples: number of times to resample the generated mask region.
-                Increasing the number of resamples improves the semantic fit of the
-                generated mask region w.r.t the rest of the image. Default: 1.
-            batch_size: number of images to generate. Default: 1.
-            num_steps: number of diffusion steps (controls image quality).
-                Default: 25.
-            unconditional_guidance_scale: float controlling how closely the image
-                should adhere to the prompt. Larger values result in more
-                closely adhering to the prompt, but will make the image noisier.
-                Default: 7.5.
-            diffusion_noise: (Optional) Tensor of shape (`batch_size`,
-                img_height // 8, img_width // 8, 4), or a Tensor of shape
-                (img_height // 8, img_width // 8, 4). Optional custom noise to
-                seed the diffusion process. When the batch axis is omitted, the
-                same noise will be used to seed diffusion for every generated image.
-            seed: (Optional) integer which is used to seed the random generation of
-                diffusion noise, only to be specified if `diffusion_noise` is None.
-            verbose: whether to print progress bar. Default: True.
+        - prompt (string): A string representing the prompt for generation
+        - image (tensor): Tensor of shape with RGB values in [0, 255]. When the batch is omitted, the same image will be used as the starting image
+        - mask (tensor): Tensor with binary values 0 or 1. When the batch is omitted, the same mask will be used on all images
+        - negative_prompt (string): A string containing information to negatively guide the image generation (e.g. by removing or altering certain aspects
+            of the generated image). Default: None
+        - num_resamples (int): number of times to resample the generated mask region. Increasing the number of resamples improves the semantic fit of the
+            generated mask region w.r.t the rest of the image. Default: 1
+        - batch_size (int): number of images to generate. Default: 1
+        - num_steps (int): number of diffusion steps (controls image quality). Default: 25
+        - unconditional_guidance_scale (float): controlling how closely the image should adhere to the prompt. Larger values result in more
+             closely adhering to the prompt, but will make the image noisier. Default: 7.5
+        - diffusion_noise (tensor, optional): Tensor. Optional custom noise to
+              seed the diffusion process. When the batch axis is omitted, the same noise will be used to seed diffusion for every generated image
+        - seed (int, optional): is used to seed the random generation of diffusion noise, only to be specified if `diffusion_noise` is None
+        - verbose (bool): whether to print progress bar. Default: True
         """
         if diffusion_noise is not None and seed is not None:
             raise ValueError(
@@ -417,15 +368,7 @@ class StableDiffusionBase:
 
     @property
     def image_encoder(self):
-        """image_encoder returns the VAE Encoder with pretrained weights.
-
-        Usage:
-        ```python
-        sd = keras_cv.models.StableDiffusion()
-        my_image = np.ones((512, 512, 3))
-        latent_representation = sd.image_encoder.predict(my_image)
-        ```
-        """
+        """image_encoder returns the VAE Encoder with pretrained weights."""
         if self._image_encoder is None:
             self._image_encoder = ImageEncoder(self.img_height, self.img_width)
             if self.jit_compile:
@@ -442,7 +385,7 @@ class StableDiffusionBase:
 
     @property
     def decoder(self):
-        """decoder returns the diffusion image decoder model with pretrained weights.
+        """Decoder returns the diffusion image decoder model with pretrained weights.
         Can be overriden for tasks where the decoder needs to be modified.
         """
         if self._decoder is None:
@@ -453,7 +396,7 @@ class StableDiffusionBase:
 
     @property
     def tokenizer(self):
-        """tokenizer returns the tokenizer used for text inputs.
+        """Tokenizer returns the tokenizer used for text inputs.
         Can be overriden for tasks like textual inversion where the tokenizer needs to be modified.
         """
         if self._tokenizer is None:
@@ -499,45 +442,15 @@ class StableDiffusionBase:
 class StableDiffusion(StableDiffusionBase):
     """Keras implementation of Stable Diffusion.
 
-    Note that the StableDiffusion API, as well as the APIs of the sub-components
-    of StableDiffusion (e.g. ImageEncoder, DiffusionModel) should be considered
-    unstable at this point. We do not guarantee backwards compatability for
-    future changes to these APIs.
-
-    Stable Diffusion is a powerful image generation model that can be used,
+    Stable Diffusion is an image generation model that can be used,
     among other things, to generate pictures according to a short text description
     (called a "prompt").
 
     Arguments:
-        img_height: Height of the images to generate, in pixel. Note that only
-            multiples of 128 are supported; the value provided will be rounded
-            to the nearest valid value. Default: 512.
-        img_width: Width of the images to generate, in pixel. Note that only
-            multiples of 128 are supported; the value provided will be rounded
-            to the nearest valid value. Default: 512.
-        jit_compile: Whether to compile the underlying models to XLA.
-            This can lead to a significant speedup on some systems. Default: False.
-
-    Example:
-
-    ```python
-    from keras_cv.models import StableDiffusion
-    from PIL import Image
-
-    model = StableDiffusion(img_height=512, img_width=512, jit_compile=True)
-    img = model.text_to_image(
-        prompt="A beautiful horse running through a field",
-        batch_size=1,  # How many images to generate at once
-        num_steps=25,  # Number of iterations (controls image quality)
-        seed=123,  # Set this to always get the same image from the same prompt
-    )
-    Image.fromarray(img[0]).save("horse.png")
-    print("saved at horse.png")
-    ```
-
-    References:
-    - [About Stable Diffusion](https://stability.ai/blog/stable-diffusion-announcement)
-    - [Original implementation](https://github.com/CompVis/stable-diffusion)
+    - img_height (int): Height of the images to generate, in pixel. Default: 512
+    - img_width (int): Width of the images to generate, in pixel. Note that only
+            multiples of 128 are supported. Default: 512
+    - jit_compile (bool): Whether to compile the underlying models to XLA. This can lead to a speedup on some systems. Default: False
     """
 
     def __init__(
@@ -580,47 +493,17 @@ class StableDiffusion(StableDiffusionBase):
 
 
 class StableDiffusionV2(StableDiffusionBase):
-    """Keras implementation of Stable Diffusion v2.
+    """Keras implementation of Stable Diffusion.
 
-    Note that the StableDiffusion API, as well as the APIs of the sub-components
-    of StableDiffusionV2 (e.g. ImageEncoder, DiffusionModelV2) should be considered
-    unstable at this point. We do not guarantee backwards compatability for
-    future changes to these APIs.
-
-    Stable Diffusion is a powerful image generation model that can be used,
+    Stable Diffusion is an image generation model that can be used,
     among other things, to generate pictures according to a short text description
     (called a "prompt").
 
     Arguments:
-        img_height: Height of the images to generate, in pixel. Note that only
-            multiples of 128 are supported; the value provided will be rounded
-            to the nearest valid value. Default: 512.
-        img_width: Width of the images to generate, in pixel. Note that only
-            multiples of 128 are supported; the value provided will be rounded
-            to the nearest valid value. Default: 512.
-        jit_compile: Whether to compile the underlying models to XLA.
-            This can lead to a significant speedup on some systems. Default: False.
-    Example:
-
-    ```python
-    from keras_cv.models import StableDiffusionV2
-    from PIL import Image
-
-    model = StableDiffusionV2(img_height=512, img_width=512, jit_compile=True)
-    img = model.text_to_image(
-        prompt="A beautiful horse running through a field",
-        batch_size=1,  # How many images to generate at once
-        num_steps=25,  # Number of iterations (controls image quality)
-        seed=123,  # Set this to always get the same image from the same prompt
-    )
-    Image.fromarray(img[0]).save("horse.png")
-    print("saved at horse.png")
-    ```
-
-    References:
-
-    - [About Stable Diffusion](https://stability.ai/blog/stable-diffusion-announcement)
-    - [Original implementation](https://github.com/Stability-AI/stablediffusion)
+    - img_height (int): Height of the images to generate, in pixel. Default: 512
+    - img_width (int): Width of the images to generate, in pixel. Note that only
+            multiples of 128 are supported. Default: 512
+    - jit_compile (bool): Whether to compile the underlying models to XLA. This can lead to a speedup on some systems. Default: False
     """
 
     def __init__(
