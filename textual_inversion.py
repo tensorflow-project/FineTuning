@@ -334,7 +334,7 @@ new_weights = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constan
 new_vocab_size = len(stable_diffusion.tokenizer.vocab)
 
 # The embedding layer is the 2nd layer in the text encoder
-### get the weights of the concept we build on ('broccoli')
+### get the weights of the embedding layer
 old_token_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
 old_position_weights = stable_diffusion.text_encoder.layers[2].position_embedding.get_weights()
 
