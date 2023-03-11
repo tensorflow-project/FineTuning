@@ -347,7 +347,7 @@ new_weights = np.expand_dims(new_weights, axis=0)
 new_weights = np.concatenate([old_token_weights, new_weights], axis=0)
 
 
-# Have to set download_weights False so we can initialize the weigths ourselves
+# Have to set download_weights False so we can initialize the weights ourselves
 ### create a new text encoder 
 new_encoder = TextEncoder(
     MAX_PROMPT_LENGTH,
