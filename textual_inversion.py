@@ -30,10 +30,10 @@ from PIL import Image
 #from decoder import Decoder
 #from diffusion_model import DiffusionModel
 #from stable_diffusion import StableDiffusion
-from models import TextEncoder
-from models import Decoder
-from models import DiffusionModel
-from models import StableDiffusion
+from models.text_encoder import TextEncoder
+from models.decoder import Decoder
+from models.diffusion_model import DiffusionModel
+from models.stable_diffusion import StableDiffusion
 
 ### create an instance of the StableDiffusion() class
 stable_diffusion = StableDiffusion()
