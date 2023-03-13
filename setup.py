@@ -6,8 +6,8 @@ setup(
     packages=find_packages(),
     install_requires=[
     ],
-    author='Your Name',
-    author_email='your.email@example.com',
+    author='Malin Braatz, Mathilda Buschmann, Alice Schirrmeister',
+    author_email='mbraatz@uni-osnabrueck.de, mbuschmann@uni-osnabrueck.de, aschirrmeist@uni-osnabrueck.de',
     description='Description of your package',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
