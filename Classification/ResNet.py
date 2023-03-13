@@ -137,7 +137,7 @@ def create_summary_writers(config_name):
     return train_summary_writer, val_summary_writer
    
 #training loop
-def training_loop(model, epochs):
+def training_loop(model, epochs, train_ds, test_ds):
   for e in range(epochs):
     #training
     for data in tqdm.tqdm(train_ds, position = 0, leave = True):
