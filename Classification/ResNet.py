@@ -74,7 +74,7 @@ class ResNet(tf.keras.Model):
         tf.keras.layers.MaxPooling2D(pool_size=2, strides=2),
         ResBlock(96, 4),
         tf.keras.layers.GlobalAvgPool2D(),
-        tf.keras.layers.Dense(2, activation='softmax')
+        tf.keras.layers.Dense(4, activation='softmax')
     ]
 
   def call(self,x):
