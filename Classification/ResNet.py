@@ -8,6 +8,14 @@ import matplotlib.image as mpimg
 import tqdm
 
 def image_preprocessing(path, images):
+  """Preprocesses images by resizing them to (224, 224) and converting them to numpy arrays
+    
+    Args:
+    - path (str): The directory path containing the images
+    - images (List[np.ndarray]): a list to which the preprocessed images will be appended
+    
+  """
+
   file_list = os.listdir(path)
   for file in file_list:
     img = Image.open(path + file)
@@ -15,6 +23,17 @@ def image_preprocessing(path, images):
     images.append(np.array(img))
 
 def dataset(path, label):
+   """Creates a TensorFlow dataset from image files in the specified directory path and assigns the given label to all images
+
+    Args:
+    - path (str): the path to the directory containing image files
+    - label (int): the label to be assigned to all images in the dataset
+
+    Returns:
+    - dataset (tf.data.Dataset): a TensorFlow dataset object containing the preprocessed images and their corresponding labels
+
+   """
+
   images = []
   image_preprocessing(path, images)
   labels = np.full(len(images), label)
@@ -35,16 +54,35 @@ def dataset(path, label):
 
 
 class ResLayer(tf.keras.layers.Layer):
+  """A residual layer implementation for use in a neural network.
+
+    Args:
+    - num_filters (int): the number of filters for the convolutional layer
+
+    Attributes:
+    - conv (tf.keras.layers.Conv2D): the convolutional layer with relu activation
+
+  """
   def __init__(self, num_filters):
     super(ResLayer, self).__init__()
     self.conv = tf.keras.layers.Conv2D(filters=num_filters, kernel_size=3, padding='same', activation='relu')
 
   def call(self, x):
+    """Performs the forward pass with a residual connection to keep the input alive
+    
+    """
     c = self.conv(x)
     x = c+x
     return x
 
 class ResBlock(tf.keras.layers.Layer):
+  """A Residual Block layer for a ResNet model, it consists of a convolutional layer followed by a series of Residual Layers
+
+    Args:
+    - depth (int): number of filters in the convolutional layer
+    - layers (int): number of residual layers in the block
+    
+  """
   def __init__(self, depth, layers):
     super(ResBlock, self).__init__()
     self.deeper_layer = tf.keras.layers.Conv2D(filters=depth, kernel_size=3, padding='same', activation='relu')
@@ -58,9 +96,18 @@ class ResBlock(tf.keras.layers.Layer):
 
 
 class ResNet(tf.keras.Model):
+  """A Residual Network for image classification
+
+    Attributes:
+    - loss_function: The loss function used for training the model.
+    - optimizer: The optimizer used for training the model.
+    - metrics_list: A list of metrics used to evaluate the model's performance during training and testing.
+    - layers_list: A list of layers that define the ResNet architecture.
+
+  """
   def __init__(self):
     super(ResNet, self).__init__()
-
+    ### we use Categorical Crossentropy and Categorical Accuracy as we have more than two classes
     self.loss_function = tf.keras.losses.CategoricalCrossentropy()
     self.optimizer = tf.keras.optimizers.Adam()
 
@@ -74,6 +121,7 @@ class ResNet(tf.keras.Model):
         tf.keras.layers.MaxPooling2D(pool_size=2, strides=2),
         ResBlock(96, 4),
         tf.keras.layers.GlobalAvgPool2D(),
+        ### we need 4 units in the output layer as we have four different classes
         tf.keras.layers.Dense(4, activation='softmax')
     ]
 
@@ -93,6 +141,14 @@ class ResNet(tf.keras.Model):
 
   @tf.function
   def train_step(self, data):
+    """Train one batch of data using the model
+
+    Args:
+    - data: a tuple of (images, labels) representing a batch of training data
+
+    Returns:
+    - a dictionary of the model's metrics and their results for the batch
+    """
     img, label = data
 
     with tf.GradientTape() as tape:
@@ -109,6 +165,14 @@ class ResNet(tf.keras.Model):
 
   @tf.function
   def test_step(self, data):
+    """Runs a single evaluation step on a batch of data. Computes the forward pass and calculates the loss and evaluation metrics
+
+    Args:
+    - data: A batch of data consisting of images and labels
+
+    Returns:
+    - a dictionary of the evaluation metrics' names and their corresponding results
+    """
     img, label = data
 
     output = self(img, training = True)
@@ -121,6 +185,15 @@ class ResNet(tf.keras.Model):
     
 
 def create_summary_writers(config_name):
+  """Create TensorFlow summary writers for training and validation metrics
+
+  Args:
+  - config_name (str): name of the configuration being used. Used to organize log files
+
+  Returns:
+  - Tuple[tf.summary.SummaryWriter, tf.summary.SummaryWriter]: a tuple of two summary writers, the first is for writing
+    training metrics, and the second is for writing validation metrics
+  """
     
     #define where to save logs
     current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -138,6 +211,15 @@ def create_summary_writers(config_name):
    
 #training loop
 def training_loop(model, epochs, train_ds, test_ds, train_summary_writer, val_summary_writer):
+  """training loop for a given model, iterates through the batches of data and calls the train and test step on them
+  Args:
+  - model: instance of a tf.keras.Model subclass
+  - epochs: number of epochs to train the model for
+  - train_ds: training dataset
+  - test_ds: testing dataset
+  - train_summary_writer: summary writer for training metrics
+  - val_summary_writer: summary writer for validation metrics
+  """
   for e in range(epochs):
     #training
     for data in tqdm.tqdm(train_ds, position = 0, leave = True):
