@@ -23,7 +23,7 @@ def image_preprocessing(path, images):
     images.append(np.array(img))
 
 def dataset(path, label):
-   """Creates a TensorFlow dataset from image files in the specified directory path and assigns the given label to all images
+  """Creates a TensorFlow dataset from image files in the specified directory path and assigns the given label to all images
 
     Args:
     - path (str): the path to the directory containing image files
@@ -32,7 +32,7 @@ def dataset(path, label):
     Returns:
     - dataset (tf.data.Dataset): a TensorFlow dataset object containing the preprocessed images and their corresponding labels
 
-   """
+  """
 
   images = []
   image_preprocessing(path, images)
@@ -61,7 +61,6 @@ class ResLayer(tf.keras.layers.Layer):
 
     Attributes:
     - conv (tf.keras.layers.Conv2D): the convolutional layer with relu activation
-
   """
   def __init__(self, num_filters):
     super(ResLayer, self).__init__()
@@ -103,7 +102,6 @@ class ResNet(tf.keras.Model):
     - optimizer: The optimizer used for training the model.
     - metrics_list: A list of metrics used to evaluate the model's performance during training and testing.
     - layers_list: A list of layers that define the ResNet architecture.
-
   """
   def __init__(self):
     super(ResNet, self).__init__()
@@ -148,6 +146,7 @@ class ResNet(tf.keras.Model):
 
     Returns:
     - a dictionary of the model's metrics and their results for the batch
+    
     """
     img, label = data
 
