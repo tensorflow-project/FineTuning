@@ -43,7 +43,13 @@ MAX_PROMPT_LENGTH = 77
 
 
 class StableDiffusionBase:
-    """Base class for stable diffusion and stable diffusion v2 model."""
+    """Base class for stable diffusion and stable diffusion v2 model
+    Args:
+    - img_height (int): height of input image, default is 512
+    - img_width (int): width of input image, default is 512
+    - jit_compile (bool): whether to use just-in-time compilation, default is False
+          
+    """
 
     def __init__(
         self,
@@ -63,7 +69,7 @@ class StableDiffusionBase:
         self._diffusion_model = None
         self._decoder = None
         self._tokenizer = None
-
+        ### Store just-in-time compilation flag
         self.jit_compile = jit_compile
 
     def text_to_image(
@@ -75,6 +81,19 @@ class StableDiffusionBase:
         unconditional_guidance_scale=7.5,
         seed=None,
     ):
+        """Generate an image from a given text prompt using the Stable Diffusion model.
+
+        Args:
+        - prompt (str): the text prompt to generate an image from
+        - negative_prompt (str): an optional negative text prompt for contrastive learning, default is None
+        - batch_size (int): the number of images to generate in each batch, default is 1
+        - num_steps (int): the number of diffusion steps to use during generation, default is 50
+        - unconditional_guidance_scale (float): a scale factor for unconditional guidance, default is 7.5
+        - seed (int): an optional seed for the random number generator, default is None
+
+        Returns:
+        - an image generated from the given text prompt.
+        """
         encoded_text = self.encode_text(prompt)
 
         return self.generate_image(
@@ -100,13 +119,16 @@ class StableDiffusionBase:
         """
         # Tokenize prompt (i.e. starting context)
         inputs = self.tokenizer.encode(prompt)
+        ### check prompt length
         if len(inputs) > MAX_PROMPT_LENGTH:
             raise ValueError(
                 f"Prompt is too long (should be <= {MAX_PROMPT_LENGTH} tokens)"
             )
+        ### pad prompts and convert them to a tensor    
         phrase = inputs + [49407] * (MAX_PROMPT_LENGTH - len(inputs))
         phrase = tf.convert_to_tensor([phrase], dtype=tf.int32)
-
+        
+        ### calculate latent text encoding of the prompt
         context = self.text_encoder.predict_on_batch(
             [phrase, self._get_pos_ids()]
         )
@@ -160,7 +182,7 @@ class StableDiffusionBase:
             unconditional_context = self._expand_tensor(
                 unconditional_context, batch_size
             )
-
+        ### If diffusion noise is provided, use it as the initial noise
         if diffusion_noise is not None:
             diffusion_noise = tf.squeeze(diffusion_noise)
             if diffusion_noise.shape.rank == 3:
@@ -169,13 +191,14 @@ class StableDiffusionBase:
                 )
             latent = diffusion_noise
         else:
+            ### Otherwise, generate initial diffusion noise with a seed
             latent = self._get_initial_diffusion_noise(batch_size, seed)
-
-        # Iterative reverse diffusion stage
+        
+        ### Iteratively perform reverse diffusion to generate image
         timesteps = tf.range(1, 1000, 1000 // num_steps)
         alphas, alphas_prev = self._get_initial_alphas(timesteps)
         progbar = keras.utils.Progbar(len(timesteps))
-        iteration = 0
+        iteration = 0  
         for index, timestep in list(enumerate(timesteps))[::-1]:
             latent_prev = latent  # Set aside the previous latent vector
             t_emb = self._get_timestep_embedding(timestep, batch_size)
@@ -348,6 +371,13 @@ class StableDiffusionBase:
         return np.clip(decoded, 0, 255).astype("uint8")
 
     def _get_unconditional_context(self):
+        """Returns the unconditional context for the text encoder
+
+        The unconditional context is a tensor representing the encoding of a fixed set of unconditional tokens
+
+        Returns:
+        - unconditional_context (tensor): Tensor representing the unconditional context.
+        """
         unconditional_tokens = tf.convert_to_tensor(
             [_UNCONDITIONAL_TOKENS], dtype=tf.int32
         )
@@ -406,6 +436,18 @@ class StableDiffusionBase:
     def _get_timestep_embedding(
         self, timestep, batch_size, dim=320, max_period=10000
     ):
+        """Get the timestep embedding for the current time step.
+
+        Args:
+        - timestep (int): the current time step
+        - batch_size (int): the batch size
+        - dim (int): the dimension of the embedding, default: 320
+        - max_period (int): the maximum period, default: 10000
+
+        Returns:
+        - tensor: the timestep embedding for the current time step
+        """
+
         half = dim // 2
         freqs = tf.math.exp(
             -math.log(max_period) * tf.range(0, half, dtype=tf.float32) / half
@@ -416,12 +458,34 @@ class StableDiffusionBase:
         return tf.repeat(embedding, batch_size, axis=0)
 
     def _get_initial_alphas(self, timesteps):
+        """Gets the alphas (cumulative product of the square root of the inverse
+        timescales) for the given timesteps, as well as the previous alphas
+
+        Args:
+        - timesteps (tensor): tensor containing the timesteps for which to get
+            the alphas
+
+        Returns:
+        - alphas (list): a list of the alphas for each timestep in `timesteps`
+        - alphas_prev (list): a list of the previous alphas, with the first
+            element set to 1.0
+        """
         alphas = [_ALPHAS_CUMPROD[t] for t in timesteps]
         alphas_prev = [1.0] + alphas[:-1]
 
         return alphas, alphas_prev
 
     def _get_initial_diffusion_noise(self, batch_size, seed):
+        """Returns an initial noise tensor for the diffusion process, with a specific shape and optional random seed
+
+        Args:
+        - batch_size (int): The batch size of the noise tensor
+        - seed (int, optional): The random seed to use for generating the noise tensor
+
+        Returns:
+        - a tensor of shape (batch_size, img_height//8, img_width//8, 4) representing the initial noise tensor for the diffusion process
+
+        """
         if seed is not None:
             return tf.random.stateless_normal(
                 (batch_size, self.img_height // 8, self.img_width // 8, 4),
