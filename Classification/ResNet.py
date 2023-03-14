@@ -194,19 +194,19 @@ def create_summary_writers(config_name):
     training metrics, and the second is for writing validation metrics
   """
     
-    #define where to save logs
-    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+  #define where to save logs
+  current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
-    train_log_path = f"logs/{config_name}/{current_time}/train"
-    val_log_path = f"logs/{config_name}/{current_time}/val"
+  train_log_path = f"logs/{config_name}/{current_time}/train"
+  val_log_path = f"logs/{config_name}/{current_time}/val"
 
-    # log writer for training metrics
-    train_summary_writer = tf.summary.create_file_writer(train_log_path)
+  # log writer for training metrics
+  train_summary_writer = tf.summary.create_file_writer(train_log_path)
 
-    # log writer for validation metrics
-    val_summary_writer = tf.summary.create_file_writer(val_log_path)
-    
-    return train_summary_writer, val_summary_writer
+  # log writer for validation metrics
+  val_summary_writer = tf.summary.create_file_writer(val_log_path)
+
+  return train_summary_writer, val_summary_writer
    
 #training loop
 def training_loop(model, epochs, train_ds, test_ds, train_summary_writer, val_summary_writer):
