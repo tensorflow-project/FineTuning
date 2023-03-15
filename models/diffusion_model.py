@@ -70,11 +70,12 @@ class DiffusionModel(keras.Model):
 
         for _ in range(2):
             x = ResBlock(320)([x, t_emb])
+            ### transforms the image contiditioned on context information
             x = SpatialTransformer(8, 40, fully_connected=False)([x, context])
             outputs.append(x)
         x = PaddedConv2D(320, 3, strides=2, padding=1)(x)  # Downsample 2x
         outputs.append(x)
-
+        ### same preocdeure is repeated several times 
         for _ in range(2):
             x = ResBlock(640)([x, t_emb])
             x = SpatialTransformer(8, 80, fully_connected=False)([x, context])
@@ -103,6 +104,7 @@ class DiffusionModel(keras.Model):
 
         for _ in range(3):
             ### using the outputs of the downsampling steps to improve the upsampling
+            ### concatenate a downsampled image with the same step in the upsampling flow
             x = keras.layers.Concatenate()([x, outputs.pop()])
             x = ResBlock(1280)([x, t_emb])
         x = Upsample(1280)(x)
@@ -276,7 +278,7 @@ class ResBlock(keras.layers.Layer):
             self.residual_projection = lambda x: x
 
     def call(self, inputs):
-        """Performs a forward pass on the layer.
+        """Performs a forward pass on the layer with a residual connection
 
         Args:
         - inputs (tuple): A tuple of two tensors, the input tensor and the embedding tensor
