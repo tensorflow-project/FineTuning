@@ -625,6 +625,13 @@ def training(epoch=5, model=stable_diffusion, data = train_ds):
 
         plot_images(generated)
 
+def cosine_plot(epoch_num, cosine_similarity):
+    plt.plot(epoch_num, cosine_similarity)
+    plt.xlabel("Number of Epochs")
+    plt.ylabel("Cosine Similarity")
+    plt.title("Cosine Similarity between the basis and the new concept")
+    plt.show()
+
 def image_generation(prompt, drive_folder, number):
     """Generates an image using stable diffusion model by passing a string with a placeholder token. 
     The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
