@@ -282,6 +282,8 @@ class StableDiffusionBase:
               seed the diffusion process. When the batch axis is omitted, the same noise will be used to seed diffusion for every generated image
         - seed (int, optional): is used to seed the random generation of diffusion noise, only to be specified if `diffusion_noise` is None
         - verbose (bool): whether to print progress bar. Default: True
+        Edit: is mostly used for training to provide more stability to the model, is needed to fill in missing or corrupted parts of an image
+        helps to improve visual quality
         """
         if diffusion_noise is not None and seed is not None:
             raise ValueError(
@@ -293,13 +295,18 @@ class StableDiffusionBase:
         encoded_text = self.encode_text(prompt)
         encoded_text = tf.squeeze(encoded_text)
         if encoded_text.shape.rank == 2:
+            ### the encoded_text needs to have the same shape as the image
             encoded_text = tf.repeat(
                 tf.expand_dims(encoded_text, axis=0), batch_size, axis=0
             )
 
         image = tf.squeeze(image)
+        
+        ### normalize the image
         image = tf.cast(image, dtype=tf.float32) / 255.0 * 2.0 - 1.0
         image = tf.expand_dims(image, axis=0)
+        
+        
         known_x0 = self.image_encoder(image)
         if image.shape.rank == 3:
             known_x0 = tf.repeat(known_x0, batch_size, axis=0)
