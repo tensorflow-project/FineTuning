@@ -623,7 +623,7 @@ def training(epoch=5, model=stable_diffusion, data = train_ds):
 
         plot_images(generated)
 
-def image_generation(prompt, drive_folder, i_file, number):
+def image_generation(prompt, drive_folder, number):
     ### get the number of the last image generated, to ensure each picture gets a different name
     i_file = os.path.join(drive_folder, 'i.txt')
     if os.path.isfile(i_file):
