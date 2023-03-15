@@ -176,7 +176,7 @@ happy_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/9zAwPyt.jpg",
         "https://i.imgur.com/qCNFRl4.jpg",
-        "https://i.imgur.com/Q8qiVEN.jpg",
+        "https://i.imgur.com/YLnylVr.png",
     ],
     prompts = [
         "a photo of a happy {}",
@@ -208,9 +208,11 @@ happy_ds = assemble_dataset(
 
 love_ds = assemble_dataset(
     urls = [
-        "https://i.imgur.com/SqFxJfM.jpg",
         "https://i.imgur.com/hFqqp3p.jpg",
         "https://i.imgur.com/uGkSrzg.jpg",
+        "https://i.imgur.com/zTVXw0D.png",
+        "https://i.imgur.com/XJxG3f0.png",
+        
     ],
     prompts = [
         "a photo of a {} in love",
