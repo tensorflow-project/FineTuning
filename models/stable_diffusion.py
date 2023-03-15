@@ -299,16 +299,18 @@ class StableDiffusionBase:
             encoded_text = tf.repeat(
                 tf.expand_dims(encoded_text, axis=0), batch_size, axis=0
             )
-
+        ### making the image compatible with the network
         image = tf.squeeze(image)
         
         ### normalize the image
         image = tf.cast(image, dtype=tf.float32) / 255.0 * 2.0 - 1.0
         image = tf.expand_dims(image, axis=0)
         
-        
+        ### get a latent representation of the image
         known_x0 = self.image_encoder(image)
+        
         if image.shape.rank == 3:
+            ### match the shape of the input tensor
             known_x0 = tf.repeat(known_x0, batch_size, axis=0)
 
         mask = tf.expand_dims(mask, axis=-1)
@@ -316,22 +318,27 @@ class StableDiffusionBase:
             tf.nn.max_pool2d(mask, ksize=8, strides=8, padding="SAME"),
             dtype=tf.float32,
         )
+        
+        ### preparing the mask tensor that indicates which pixels of the input image should be inpainted
         mask = tf.squeeze(mask)
         if mask.shape.rank == 2:
             mask = tf.repeat(tf.expand_dims(mask, axis=0), batch_size, axis=0)
         mask = tf.expand_dims(mask, axis=-1)
 
         context = encoded_text
+        ### if there is no negative prompt, get a random unconditional context
         if negative_prompt is None:
             unconditional_context = tf.repeat(
                 self._get_unconditional_context(), batch_size, axis=0
             )
+        ### else encode the negative prompt to get an unconditional context
         else:
             unconditional_context = self.encode_text(negative_prompt)
             unconditional_context = self._expand_tensor(
                 unconditional_context, batch_size
             )
-
+            
+        ### if diffusion noise is provided preprocess it to match the shape of a latent
         if diffusion_noise is not None:
             diffusion_noise = tf.squeeze(diffusion_noise)
             if diffusion_noise.shape.rank == 3:
@@ -339,34 +346,48 @@ class StableDiffusionBase:
                     tf.expand_dims(diffusion_noise, axis=0), batch_size, axis=0
                 )
             latent = diffusion_noise
+            
+        ### else, generate random noise
         else:
             latent = self._get_initial_diffusion_noise(batch_size, seed)
 
         # Iterative reverse diffusion stage
+        
+        ### setting up a range of timesteps
         timesteps = tf.range(1, 1000, 1000 // num_steps)
+        
+        ### get the initial alpha values
         alphas, alphas_prev = self._get_initial_alphas(timesteps)
         if verbose:
             progbar = keras.utils.Progbar(len(timesteps))
             iteration = 0
-
+        ### iterate through the timesteps in a reverse manner
         for index, timestep in list(enumerate(timesteps))[::-1]:
             a_t, a_prev = alphas[index], alphas_prev[index]
             latent_prev = latent  # Set aside the previous latent vector
             t_emb = self._get_timestep_embedding(timestep, batch_size)
-
+            
+            ### for the desired number of resamples
             for resample_index in range(num_resamples):
+                
+                ### calculate the unconditional latent
                 unconditional_latent = self.diffusion_model.predict_on_batch(
                     [latent, t_emb, unconditional_context]
                 )
+                ### calculate the conditional latent
                 latent = self.diffusion_model.predict_on_batch(
                     [latent, t_emb, context]
                 )
+                ### combine the unconditional and the conditional latent by means of a guidance scale
                 latent = unconditional_latent + unconditional_guidance_scale * (
                     latent - unconditional_latent
                 )
+                ### calculate the predicted initial image
                 pred_x0 = (
                     latent_prev - math.sqrt(1 - a_t) * latent
                 ) / math.sqrt(a_t)
+                
+                ### update the current latent by help of the predicted image
                 latent = (
                     latent * math.sqrt(1.0 - a_prev)
                     + math.sqrt(a_prev) * pred_x0
@@ -397,8 +418,11 @@ class StableDiffusionBase:
                 progbar.update(iteration)
 
         # Decoding stage
+        ### pass the latent to the decoder
         decoded = self.decoder.predict_on_batch(latent)
+        ### upscale the values of the image
         decoded = ((decoded + 1) / 2) * 255
+        ### clip values below 0 and above 255 and convert the type into unsigned 8-bit integers
         return np.clip(decoded, 0, 255).astype("uint8")
 
     def _get_unconditional_context(self):
