@@ -211,8 +211,7 @@ love_ds = assemble_dataset(
         "https://i.imgur.com/hFqqp3p.jpg",
         "https://i.imgur.com/uGkSrzg.jpg",
         "https://i.imgur.com/zTVXw0D.png",
-        "https://i.imgur.com/XJxG3f0.png",
-        
+        "https://i.imgur.com/XJxG3f0.png", 
     ],
     prompts = [
         "a photo of a {} in love",
