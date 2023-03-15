@@ -172,11 +172,12 @@ class StableDiffusionBase:
             )
 
         context = self._expand_tensor(encoded_text, batch_size)
-
+        ### if there is no negative prompt get another unconditional context
         if negative_prompt is None:
             unconditional_context = tf.repeat(
                 self._get_unconditional_context(), batch_size, axis=0
             )
+        ### else, set the unconditional context to the encoded negative prompt
         else:
             unconditional_context = self.encode_text(negative_prompt)
             unconditional_context = self._expand_tensor(
@@ -195,26 +196,45 @@ class StableDiffusionBase:
             latent = self._get_initial_diffusion_noise(batch_size, seed)
         
         ### Iteratively perform reverse diffusion to generate image
+        
+        ### setting up the range of timesteps for the reverse diffusion process
         timesteps = tf.range(1, 1000, 1000 // num_steps)
-        alphas, alphas_prev = self._get_initial_alphas(timesteps)
+        
+        ### get the alpha values, they repesent the amount of noise in a specific timestep
+        alphas, alphas_prev = self._get_initial_alphas(timesteps)        
         progbar = keras.utils.Progbar(len(timesteps))
         iteration = 0  
+        
+        ### for each timestep, but beginning at the end of the list, as the process is performed in a reverse manner
         for index, timestep in list(enumerate(timesteps))[::-1]:
+            ### store the latent for later noise prediction
             latent_prev = latent  # Set aside the previous latent vector
+            
+            ### get the embedding for the current timestep
             t_emb = self._get_timestep_embedding(timestep, batch_size)
+            
+            ### calculating the unconditional latent, is used such that the image generation does not overly rely on the context
             unconditional_latent = self.diffusion_model.predict_on_batch(
                 [latent, t_emb, unconditional_context]
             )
+            
+            ### calculating the latent conditioned on the context for the current timestep
             latent = self.diffusion_model.predict_on_batch(
                 [latent, t_emb, context]
             )
+            
+            ### combine the conditional and the unconditional latent by means of a scale
             latent = unconditional_latent + unconditional_guidance_scale * (
                 latent - unconditional_latent
             )
+            ### getting the alpha values for the current timestep
             a_t, a_prev = alphas[index], alphas_prev[index]
+            
+            ### predicting the latent for the initial image 
             pred_x0 = (latent_prev - math.sqrt(1 - a_t) * latent) / math.sqrt(
                 a_t
             )
+            ### update the latent by help of the initial image and the alpha values
             latent = (
                 latent * math.sqrt(1.0 - a_prev) + math.sqrt(a_prev) * pred_x0
             )
@@ -222,8 +242,12 @@ class StableDiffusionBase:
             progbar.update(iteration)
 
         # Decoding stage
+        ### pass the initial image latent to the decoder and decode it
         decoded = self.decoder.predict_on_batch(latent)
+        ### scaling the values up to between 0 and 255
         decoded = ((decoded + 1) / 2) * 255
+        ### clipping the values below 0 to 0 and those higher than 255 to 255
+        ### convert the type to unsigned 8-bit integers (common type for images)
         return np.clip(decoded, 0, 255).astype("uint8")
 
     def inpaint(
