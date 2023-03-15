@@ -24,6 +24,7 @@ from numpy.linalg import norm
 import os
 from google.colab import drive
 from PIL import Image
+import shutil
 
 ### import the different models from our Github repository
 #from text_encoder import TextEncoder
@@ -624,6 +625,17 @@ def training(epoch=5, model=stable_diffusion, data = train_ds):
         plot_images(generated)
 
 def image_generation(prompt, drive_folder, number):
+    """Generates an image using stable diffusion model by passing a string with a placeholder token. 
+    The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
+
+    Args:
+    - prompt (str): The prompt used for generating the image
+    - drive_folder (str): The path to the Google Drive folder where the image will be saved
+    - number (int): How many images are to be generated
+
+    Returns:
+    - None
+    """
     ### get the number of the last image generated, to ensure each picture gets a different name
     i_file = os.path.join(drive_folder, 'i.txt')
     if os.path.isfile(i_file):
@@ -631,20 +643,8 @@ def image_generation(prompt, drive_folder, number):
             i = int(f.read())
     else:
         i = 0
-
-    ### choose number of images to be generated in range
+        
     for j in range(number):
-        """Generates an image using stable diffusion model by passing a string with a placeholder token. 
-        The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
-
-        Args:
-        - prompt (str): The prompt used for generating the image
-        - drive_folder (str): The path to the Google Drive folder where the image will be saved
-        - i_file (str): The path to the file that stores the counter value
-
-        Returns:
-        - None
-        """
 
         generated = stable_diffusion.text_to_image(
         prompt, batch_size=1,  num_steps=25 )
