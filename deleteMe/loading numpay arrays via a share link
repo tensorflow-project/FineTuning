@@ -1,0 +1,16 @@
+import numpy as np
+import urllib.request
+
+# generate a share link: everthing between file/d/ ......... /view  is file_id
+file_id = '19xOp-K8y1WO1FTcrIht7OgtnhPOaIy_T'
+url = f"https://drive.google.com/uc?id={file_id}"
+
+# random name
+filename = 'my_array.npy'
+
+# Download the file from the URL and save it locally
+urllib.request.urlretrieve(url, filename=filename)
+
+# Load the saved numpy file using numpy.load()
+array = np.load(filename)
+print(array)
