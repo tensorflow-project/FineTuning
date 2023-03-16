@@ -557,7 +557,7 @@ print(len(old_weights))
 #combined_weights = np.expand_dims(combined_weights, axis=0)
 #print(combined_weights.shape)
 #combined_weights = np.concatenate([old_weights, combined_weights], axis=0)
-stable_diffusion.text_encoder.layers[2].token_embedding.set_weights([old_wei
+stable_diffusion.text_encoder.layers[2].token_embedding.set_weights([old_weights])
     
 def cosine_sim(e1,e2):
     sim = dot(e1, e2)/(norm(e1)*norm(e2))
