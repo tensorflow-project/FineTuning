@@ -243,10 +243,8 @@ old_token_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_
 old_position_weights = stable_diffusion.text_encoder.layers[2].position_embedding.get_weights()
 
 old_token_weights = old_token_weights[0]
-print(len(old_token_weights))
 new_weights_broccoli = np.expand_dims(new_weights_broccoli, axis=0)
 new_weights_broccoli = np.concatenate([old_token_weights, new_weights_broccoli], axis=0)
-print(new_weights_broccoli.shape)
 
 
 ##### same for emoji token
@@ -261,7 +259,6 @@ new_weights_emoji = np.expand_dims(new_weights_emoji, axis=0)
 
 ### concatenate the weights for the new embedding at the end of our weights (~)
 new_weights = np.concatenate([new_weights_broccoli, new_weights_emoji], axis=0)
-print(new_weights.shape)
 
 tokenized_combined = stable_diffusion.tokenizer.encode("broccolis sticker")[1]
 
@@ -340,8 +337,6 @@ all_models = [
     stable_diffusion.decoder,
 ]
 
-### check that only in the text encoder we have trainable weights
-print([[w.shape for w in model.trainable_weights] for model in all_models])
 
 
 # Remove the top layer from the encoder, which cuts off the variance and only returns the mean
@@ -536,7 +531,6 @@ emoji_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_emoji)[1]
 
 
 broccoli_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(broccoli_tokenized))
-print(broccoli_embeddings.shape)
 broccoli.append(broccoli_embeddings)
 emoji_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(emoji_tokenized))
 
@@ -549,9 +543,6 @@ def percentage_emoji(percent):
     old_weights = old_weights[0]
     old_weights[-1] = combined_weights
 
-    #combined_weights = np.expand_dims(combined_weights, axis=0)
-    #print(combined_weights.shape)
-    #combined_weights = np.concatenate([old_weights, combined_weights], axis=0)
     stable_diffusion.text_encoder.layers[2].token_embedding.set_weights([old_weights])
     
 def cosine_sim(e1,e2):
