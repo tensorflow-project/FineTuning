@@ -540,12 +540,11 @@ print(broccoli_embeddings.shape)
 broccoli.append(broccoli_embeddings)
 emoji_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(emoji_tokenized))
 
-old_weights = []
+#old_weights = []
+percent = 0.5
 
-def percentage_emoji(percent):
-    combined_weights = broccoli_embeddings + (percent*(emoji_embeddings - broccoli_embeddings))
-    old_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
-    #old_position_weights = stable_diffusion.text_encoder.layers[2].position_embedding.get_weights()
+combined_weights = broccoli_embeddings + (percent*(emoji_embeddings - broccoli_embeddings))
+old_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
 
 old_weights = old_weights[0]
 old_weights[-1] = combined_weights
