@@ -508,14 +508,15 @@ trainer = StableDiffusionFineTuner(stable_diffusion, noise_scheduler, name="trai
 t = StableDiffusionFineTuner(stable_diffusion, noise_scheduler, name="t")
 
 
-###EPOCHS = 15
-### learning rate decays depending on the number of epochs to avoid convergence issues in few epochs (?)
-learning_rate = keras.optimizers.schedules.CosineDecay(
-    initial_learning_rate=1e-3, decay_steps=train_ds.cardinality() * EPOCHS
-)
+#EPOCHS = 50
+### learning rate decays depending on the number of epochs to avoid convergence issues in few epochs 
+### in the originial tutorial a scheduler is used but we experienced to have better results without a scheduler
+"""learning_rate = keras.optimizers.schedules.CosineDecay(
+    initial_learning_rate=1e-4, decay_steps=train_ds.cardinality() * EPOCHS
+)"""
 ### inizialize the optimizer
 optimizer = keras.optimizers.Adam(
-    weight_decay=0.004, learning_rate=learning_rate, epsilon=1e-8, global_clipnorm=10
+    weight_decay=0.004, learning_rate=1e-4, epsilon=1e-8, global_clipnorm=10
 )
 
 trainer.compile(
