@@ -98,9 +98,9 @@ def assemble_image_dataset(urls):
 MAX_PROMPT_LENGTH = 77
 
 ### our new concept which is later inserted in the different prompts (for training and image generation)
-placeholder_token_broccoli = ""
-placeholder_token_emoji = ""
-placeholder_token_combined = ""
+placeholder_token_broccoli = "<my-broccoli-token>"
+placeholder_token_emoji = "<my-emoji-token>"
+placeholder_token_combined = "<my-broccoli-emoji-token>"
 
 
 def pad_embedding(embedding):
