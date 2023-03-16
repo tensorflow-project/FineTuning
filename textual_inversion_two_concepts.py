@@ -126,3 +126,288 @@ def assemble_text_dataset(prompts, placeholder_token):
     text_dataset = tf.data.Dataset.from_tensor_slices(embeddings)
     text_dataset = text_dataset.shuffle(100, reshuffle_each_iteration=True)
     return text_dataset
+    
+def assemble_dataset(urls, prompts, placeholder_token):
+    """ Assembles a TensorFlow Dataset containing pairs of images and text prompts.
+    Args:
+    - urls: A list of URLs representing the image dataset
+    - prompts: A list of text prompts corresponding to the images
+    - placeholder_token: A string token representing the location where the prompt text will be inserted in the final text
+    Returns:
+    - A TensorFlow Dataset object containing pairs of images and their corresponding text prompts.
+    """
+    ### creating the image and test dataset
+    image_dataset = assemble_image_dataset(urls)
+    text_dataset = assemble_text_dataset(prompts, placeholder_token)
+    
+    ### repeat both datasets to get several different combinations of images and text prompts
+    # the image dataset is quite short, so we repeat it to match the length of the text prompt dataset
+    image_dataset = image_dataset.repeat()
+
+    # we use the text prompt dataset to determine the length of the dataset.  Due to
+    # the fact that there are relatively few prompts we repeat the dataset 5 times.
+    # we have found that this anecdotally improves results.
+    text_dataset = text_dataset.repeat(5)
+    return tf.data.Dataset.zip((image_dataset, text_dataset))    
+     
+
+def get_embedding(token):
+  tokenized = stable_diffusion.tokenizer.encode(token)[1]
+  embedding = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized))
+
+  return embedding
+  
+broccoli_ds = assemble_dataset(
+    urls = [
+        "https://i.imgur.com/9zAwPyt.jpg",
+        "https://i.imgur.com/qCNFRl4.jpg",
+        "https://i.imgur.com/kPH9XIh.jpg",
+        "https://i.imgur.com/qy1k0QK.jpg",
+    ],
+    prompts = [
+        "a photo of a happy {}",
+        "a photo of {}",
+        "a photo of one {}",
+        "a photo of a nice {}",
+        "a good photo of a {}",
+        "a photo of the nice {}",
+        "a photo of a cool {}",
+        "a rendition of the {}",
+        "a nice sticker of a {}",
+        "a sticker of a {}",
+        "a sticker of a happy {}",
+        "a sticker of a lucky {}",
+        "a sticker of a lovely {}",
+        "a sticker of a {} in a positive mood",
+        "a pixar chracter of a satisfied {}",
+        "a disney character of a positive {}",
+        "a sticker of a delighted {}",
+        "a sticker of a joyful {}",
+        "a sticker of a cheerful {}",
+        "a drawing of a glad {}",
+        "a sticker of a merry {}",
+        "a sticker of a pleased {}",
+    ],
+    placeholder_token = placeholder_token_broccoli
+)  
+
+emoji_ds = assemble_dataset(
+    urls = [
+        "https://i.imgur.com/BLLMggR.png",
+        "https://i.imgur.com/PPQ2UtM.png",
+        "https://i.imgur.com/6je73G3.png",
+    ],
+    prompts = [
+        "a photo of a happy {}",
+        "a photo of {}",
+        "a photo of one {}",
+        "a photo of a nice {}",
+        "a good photo of a {}",
+        "a photo of the nice {}",
+        "a photo of a cool {}",
+        "a rendition of the {}",
+        "a nice sticker of a {}",
+        "a sticker of a {}",
+        "a sticker of a happy {}",
+        "a sticker of a lucky {}",
+        "a sticker of a lovely {}",
+        "a sticker of a {} in a positive mood",
+        "a pixar chracter of a satisfied {}",
+        "a disney character of a positive {}",
+        "a sticker of a delighted {}",
+        "a sticker of a joyful {}",
+        "a sticker of a cheerful {}",
+        "a drawing of a glad {}",
+        "a sticker of a merry {}",
+        "a sticker of a pleased {}",
+    ],
+    placeholder_token = placeholder_token_emoji
+)
+
+
+train_ds = emoji_ds.concatenate(broccoli_ds)
+train_ds = train_ds.batch(1).shuffle(
+    train_ds.cardinality(), reshuffle_each_iteration=True)
+    
+### defining concept we want to build our new concept on
+tokenized_initializer = stable_diffusion.tokenizer.encode("broccoli")[1]
+
+### set the weights for the embedding layer's token embedding to include the new token's embedding weights.
+new_weights_broccoli = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer))
+
+# Get len of .vocab instead of tokenizer
+new_vocab_size = len(stable_diffusion.tokenizer.vocab)
+
+# The embedding layer is the 2nd layer in the text encoder
+old_token_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
+old_position_weights = stable_diffusion.text_encoder.layers[2].position_embedding.get_weights()
+
+old_token_weights = old_token_weights[0]
+print(len(old_token_weights))
+new_weights_broccoli = np.expand_dims(new_weights_broccoli, axis=0)
+new_weights_broccoli = np.concatenate([old_token_weights, new_weights_broccoli], axis=0)
+print(new_weights_broccoli.shape)
+
+
+##### same for emoji token
+### defining concept we want to build our new concept on 
+
+tokenized_initializer_emoji = stable_diffusion.tokenizer.encode("emoji")[1]
+
+
+new_weights_emoji = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer_emoji))
+
+new_weights_emoji = np.expand_dims(new_weights_emoji, axis=0)
+
+### concatenate the weights for the new embedding at the end of our weights (~)
+new_weights = np.concatenate([new_weights_broccoli, new_weights_emoji], axis=0)
+print(new_weights.shape)
+
+tokenized_combined = stable_diffusion.tokenizer.encode("broccolis sticker")[1]
+
+new_weights_combined = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_combined))
+
+new_weights_combined = np.expand_dims(new_weights_combined, axis=0)
+
+new_weights = np.concatenate([new_weights, new_weights_combined], axis=0)
+
+test_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
+test_weights = test_weights[0]
+
+# Have to set download_weights False so we can initialize the weights ourselves
+### create a new text encoder 
+new_encoder = TextEncoder(
+    MAX_PROMPT_LENGTH,
+    vocab_size = new_vocab_size,
+    download_weights = False,
+)
+### we set the weights of the new_encoder to the same as in the old text_encoder except from the embedding layer
+for index, layer in enumerate(stable_diffusion.text_encoder.layers):
+    # Layer 2 is the embedding layer, so we omit it from our weight-copying
+    if index == 2:
+        continue
+    new_encoder.layers[index].set_weights(layer.get_weights())
+
+### set the weights of the embedding layer according to our new_weights
+new_encoder.layers[2].token_embedding.set_weights([new_weights])
+
+### set all weights of the other embeddings to the same values as in the initial text encoder
+new_encoder.layers[2].position_embedding.set_weights(old_position_weights)
+
+### set the stable_diffusion text encoder to our new_encoder and compile it
+### thus the stable_diffusion.text_encoder has the adjusted weights
+stable_diffusion._text_encoder = new_encoder
+stable_diffusion._text_encoder.compile(jit_compile=True)
+
+
+### we only train the encoder as we want to fine-tune the embeddings
+stable_diffusion.diffusion_model.trainable = False
+stable_diffusion.decoder.trainable = False
+stable_diffusion.text_encoder.trainable = True
+
+stable_diffusion.text_encoder.layers[2].trainable = True
+
+def traverse_layers(layer):
+    """ Traverses the layers and embedding attributes of a layer
+    Args:
+    - layer: A text encoder layer
+    Yields:
+    -  layers and their corresponding embedding attributes
+    """
+    if hasattr(layer, "layers"):
+        for layer in layer.layers:
+            yield layer
+    if hasattr(layer, "token_embedding"):
+        yield layer.token_embedding
+    if hasattr(layer, "position_embedding"):
+        yield layer.position_embedding
+
+### iterates through the generator and adjusts the trainable attribute of the layers to trainable = True if it is part of the embedding
+for layer in traverse_layers(stable_diffusion.text_encoder):
+    if isinstance(layer, keras.layers.Embedding) or "clip_embedding" in layer.name:
+        layer.trainable = True
+    else:
+        layer.trainable = False
+
+### set the layer that only encodes the position of tokens in the prompts to trainable = False
+new_encoder.layers[2].position_embedding.trainable = False
+
+### put all the different components of stable diffusion model into a list
+all_models = [
+    stable_diffusion.text_encoder,
+    stable_diffusion.diffusion_model,
+    stable_diffusion.decoder,
+]
+
+### check that only in the text encoder we have trainable weights
+print([[w.shape for w in model.trainable_weights] for model in all_models])
+
+
+# Remove the top layer from the encoder, which cuts off the variance and only returns the mean
+### we make the encoder more efficient while still preserving the most important features
+training_image_encoder = keras.Model(
+    stable_diffusion.image_encoder.input,
+    stable_diffusion.image_encoder.layers[-2].output,
+)
+
+
+def sample_from_encoder_outputs(outputs):
+    """Returns a random sample from the embedding distribution given the mean and log variance tensors
+    Args:
+    - outputs: A tensor of shape (batch_size, embedding_dim*2), where the first embedding_dim values correspond to the mean of the distribution, 
+               and the second embedding_dim values correspond to the log variance of the distribution
+    Returns:
+    - a tensor of shape (batch_size, embedding_dim), representing a random sample from the embedding distribution
+    """
+    mean, logvar = tf.split(outputs, 2, axis=-1)
+    logvar = tf.clip_by_value(logvar, -30.0, 20.0)
+    std = tf.exp(0.5 * logvar)
+    sample = tf.random.normal(tf.shape(mean))
+    return mean + std * sample
+
+
+def get_timestep_embedding(timestep, dim=320, max_period=10000):
+    """Returns the embedding of a specific timestep in the denoising process
+    Args:
+    - timestep (int): The timestep for which the embedding is requested
+    - dim (int, optional): The dimensionality of the embedding, default is 320
+    - max_period (int, optional): The maximum period, default is 10000
+    Returns:
+    - embedding (tf.Tensor): A tensor of shape (dim,) containing the embedding of the specified timestep
+    """
+    ### calculate half the dimensionality of the embedding
+    half = dim // 2
+    
+    ### calculate frequencies using logarithmically decreasing values
+    freqs = tf.math.exp(
+        -math.log(max_period) * tf.range(0, half, dtype=tf.float32) / half
+    )
+    
+    ### compute arguments for cosine and sine functions
+    args = tf.convert_to_tensor([timestep], dtype=tf.float32) * freqs
+    
+    ### concatenate cosine and sine values to create embedding
+    embedding = tf.concat([tf.math.cos(args), tf.math.sin(args)], 0)
+    
+    ### return the embedding tensor
+    return embedding
+
+#### used for hidden state (output of text encoder)
+def get_position_ids():
+    """returns position IDs for the transformer model,
+        the IDs range from 0 to MAX_PROMPT_LENGTH-1
+    Returns:
+    - position_ids (tf.Tensor): A tensor of shape (1, MAX_PROMPT_LENGTH) containing the position IDs
+    """
+    
+    ### create a list of integers from 0 to MAX_PROMPT_LENGTH-1
+    positions = list(range(MAX_PROMPT_LENGTH))
+    
+    ### convert the list to a tensor with dtype int32
+    position_ids = tf.convert_to_tensor([positions], dtype=tf.int32)
+    
+    return position_ids
+    
+    
+    ###JETZT CLASS ODER METHODE FÜR TEXTUAL INVERISON???
+
