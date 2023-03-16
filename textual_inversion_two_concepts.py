@@ -560,9 +560,15 @@ print(len(old_weights))
 stable_diffusion.text_encoder.layers[2].token_embedding.set_weights([old_wei
 
                                                                      
-def cosine_sim(e1, e2):
+"""def cosine_sim(e1,e2):
+    sim = dot(e1, e2)/(norm(e1)*norm(e2))
+    return sim"""
+    
+def cosine_sim(e1,e2):
     sim = dot(e1, e2)/(norm(e1)*norm(e2))
     return sim
+
+
      
 broccoli_embedding = get_embedding("broccoli")
 placeholder_embedding = get_embedding(placeholder_token_broccoli)
