@@ -277,7 +277,7 @@ test_weights = test_weights[0]
 # Have to set download_weights False so we can initialize the weights ourselves
 ### create a new text encoder 
 new_encoder = TextEncoder(
-    stable_diffusion.stable_diffusion.MAX_PROMPT_LENGTH,
+    stable_diffusion.MAX_PROMPT_LENGTH,
     vocab_size = new_vocab_size,
     download_weights = False,
 )
