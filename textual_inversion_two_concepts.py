@@ -523,15 +523,7 @@ trainer.compile(
     optimizer=optimizer,
     # We are performing reduction manually in our train step, so none is required here.
     loss=keras.losses.MeanSquaredError(reduction="none"),
-)
-
-
-
-cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
-                                                 save_weights_only=True,
-                                                 verbose=1)
-
-     
+)  
 
 
 broccoli = []
