@@ -616,15 +616,6 @@ def training(epoch=5, model=stable_diffusion, data = train_ds):
         sticker_embedding.append(emb)
         cosine_similarity.append(cosine_sim(broccoli, emb))
 
-        generated = stable_diffusion.text_to_image(
-        f"a happy {placeholder_token} ",
-        batch_size=3, 
-        num_steps = 25, 
-        seed=2746
-        )
-
-        plot_images(generated)
-
 def cosine_plot(epoch_num, cosine_similarity):
     plt.plot(epoch_num, cosine_similarity)
     plt.xlabel("Number of Epochs")
