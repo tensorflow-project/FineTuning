@@ -571,12 +571,48 @@ old_broccoli = broccoli_embedding
 old_combined = combined_embedding
 old_placeholder = placeholder_embedding
 old_emoji = emoji_embedding
-                                                                    
-
+                                                                
 
 cosine_sim(old_broccoli, broccoli_embedding)
 cosine_sim(old_combined, combined_embedding)
 cosine_sim(old_placeholder, placeholder_embedding)
 cosine_sim(old_emoji, emoji_embedding)
      
-                                                                     
+def image_generation(prompt, drive_folder, number):
+    """Generates an image using stable diffusion model by passing a string with a placeholder token. 
+    The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
+    Args:
+    - prompt (str): The prompt used for generating the image
+    - drive_folder (str): The path to the Google Drive folder where the image will be saved
+    - number (int): How many images are to be generated
+    Returns:
+    - None
+    """
+    ### get the number of the last image generated, to ensure each picture gets a different name
+    i_file = os.path.join(drive_folder, 'i.txt')
+    if os.path.isfile(i_file):
+        with open(i_file, 'r') as f:
+            i = int(f.read())
+    else:
+        i = 0
+        
+    for j in range(number):
+
+        generated = stable_diffusion.text_to_image(
+        prompt, batch_size=1,  num_steps=25 )
+        broc = generated[0]
+
+        ### convert the array generated from our stable diffusion model into a picture
+        broc = Image.fromarray(broc, mode='RGB')
+
+        broc.save(f'image_{i}.jpg')
+
+        ### save the picture to Google Drive
+        local_path = f'image_{i}.jpg'
+        drive_path = os.path.join(drive_folder, f'image_{i}.jpg')  # Use f-string to include variable in file name
+        shutil.copy(local_path, drive_path)
+
+        ### store the value of i in the file, to ensure no picture will have the same name
+        i += 1
+        with open(i_file, 'w') as f:
+            f.write(str(i))                                                                     
