@@ -409,5 +409,182 @@ def get_position_ids():
     return position_ids
     
     
-    ###JETZT CLASS ODER METHODE FÜR TEXTUAL INVERISON???
+class StableDiffusionFineTuner(keras.Model):
+    def __init__(self, stable_diffusion, noise_scheduler, **kwargs):
+        super().__init__(**kwargs)
+        self.stable_diffusion = stable_diffusion
+        ### needed to calculate the amount of noise at a specific time step
+        self.noise_scheduler = noise_scheduler
 
+    def train_step(self, data):
+        images, embeddings = data
+
+        with tf.GradientTape() as tape:
+            # Sample from the predicted distribution for the training image
+            latents = sample_from_encoder_outputs(training_image_encoder(images))
+            # The latents must be downsampled to match the scale of the latents used
+            # in the training of StableDiffusion.  This number is truly just a "magic"
+            # constant that they chose when training the model.
+            latents = latents * 0.18215
+
+            # Produce random noise in the same shape as the latent sample
+            noise = tf.random.normal(tf.shape(latents))
+            ### get the batch dimension
+            batch_dim = tf.shape(latents)[0]
+
+            # Pick a random timestep for each sample in the batch
+            timesteps = tf.random.uniform(
+                (batch_dim,),
+                minval=0,
+                maxval=noise_scheduler.train_timesteps,
+                dtype=tf.int64,
+            )
+
+            # Add noise to the latents based on the timestep for each sample
+            ### using the scheduler to determine the amount of noise
+            noisy_latents = self.noise_scheduler.add_noise(latents, noise, timesteps)
+
+            # Encode the text in the training samples to use as hidden state in the diffusion model
+            ### hidden state here means the output of the text encoder, thus the text embedding of our prompts
+            encoder_hidden_state = self.stable_diffusion.text_encoder(
+                [embeddings, get_position_ids()]
+            )
+
+            # Compute timestep embeddings for the randomly-selected timesteps for each sample in the batch
+            ### ????
+            timestep_embeddings = tf.map_fn(
+                fn=get_timestep_embedding,
+                elems=timesteps,
+                fn_output_signature=tf.float32,
+            )
+
+            # Call the diffusion model
+            ### calculate the noise predictions for each pixel(?)
+            noise_pred = self.stable_diffusion.diffusion_model(
+                [noisy_latents, timestep_embeddings, encoder_hidden_state]
+            )
+
+            # Compute the mean-squared error loss and reduce it
+            ### by taking the mean
+            loss = self.compiled_loss(noise_pred, noise)
+            loss = tf.reduce_mean(loss, axis=2)
+            loss = tf.reduce_mean(loss, axis=1)
+            loss = tf.reduce_mean(loss)
+
+        # Load the trainable weights and compute the gradients for them
+        trainable_weights = self.stable_diffusion.text_encoder.trainable_weights
+        grads = tape.gradient(loss, trainable_weights)
+
+        # Gradients are stored in indexed slices, so we have to find the index
+        # of the slice(s) which contain the placeholder token.
+        index_of_placeholder_token = tf.reshape(tf.where(grads[0].indices == 49408), ())
+        condition = grads[0].indices == 49408
+        condition = tf.expand_dims(condition, axis=-1)
+
+        # Override the gradients, zeroing out the gradients for all slices that
+        # aren't for the placeholder token, effectively freezing the weights for
+        # all other tokens.
+        grads[0] = tf.IndexedSlices(
+            values=tf.where(condition, grads[0].values, 0),
+            indices=grads[0].indices,
+            dense_shape=grads[0].dense_shape,
+        )
+
+        self.optimizer.apply_gradients(zip(grads, trainable_weights))
+        return {"loss": loss}
+     
+
+### beta is the diffusion rate (what does it do exactly?)
+noise_scheduler = NoiseScheduler(
+    beta_start=0.00085,
+    beta_end=0.012,
+    beta_schedule="scaled_linear",
+    train_timesteps=1000,
+)
+
+### Initialize the model we use to fine tune our concept
+trainer = StableDiffusionFineTuner(stable_diffusion, noise_scheduler, name="trainer")
+t = StableDiffusionFineTuner(stable_diffusion, noise_scheduler, name="t")
+
+
+###EPOCHS = 15
+### learning rate decays depending on the number of epochs to avoid convergence issues in few epochs (?)
+learning_rate = keras.optimizers.schedules.CosineDecay(
+    initial_learning_rate=1e-3, decay_steps=train_ds.cardinality() * EPOCHS
+)
+### inizialize the optimizer
+optimizer = keras.optimizers.Adam(
+    weight_decay=0.004, learning_rate=learning_rate, epsilon=1e-8, global_clipnorm=10
+)
+
+trainer.compile(
+    optimizer=optimizer,
+    # We are performing reduction manually in our train step, so none is required here.
+    loss=keras.losses.MeanSquaredError(reduction="none"),
+)
+
+
+
+cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1)
+
+     
+
+
+broccoli = []
+     
+#stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
+
+placeholder_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_combined)[1]
+broccoli_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_broccoli)[1]
+emoji_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_emoji)[1]
+
+
+broccoli_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(broccoli_tokenized))
+print(broccoli_embeddings.shape)
+broccoli.append(broccoli_embeddings)
+emoji_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(emoji_tokenized))
+
+def percentage_emoji(percent)
+    combined_weights = broccoli_embeddings + (percent*(emoji_embeddings - broccoli_embeddings))
+    old_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
+    #old_position_weights = stable_diffusion.text_encoder.layers[2].position_embedding.get_weights()
+
+old_weights = old_weights[0]
+old_weights[-1] = combined_weights
+print(len(old_weights))
+#combined_weights = np.expand_dims(combined_weights, axis=0)
+#print(combined_weights.shape)
+#combined_weights = np.concatenate([old_weights, combined_weights], axis=0)
+stable_diffusion.text_encoder.layers[2].token_embedding.set_weights([old_wei
+
+                                                                     
+
+def cosine_sim(e1, e2):
+  sim = dot(e1, e2)/(norm(e1)*norm(e2))
+  print(sim)
+  return sim
+     
+broccoli_embedding = get_embedding("broccoli")
+placeholder_embedding = get_embedding(placeholder_token_broccoli)
+emoji_embedding = get_embedding(placeholder_token_emoji)
+combined_embedding = get_embedding(placeholder_token_combined)
+### Compute the cosine similarity between the two embeddings
+cosine_sim(broccoli_embedding, placeholder_embedding)
+cosine_sim(placeholder_embedding, combined_embedding)
+cosine_sim(emoji_embedding, combined_embedding)
+                                                                     
+old_broccoli = broccoli_embedding
+old_combined = combined_embedding
+old_placeholder = placeholder_embedding
+old_emoji = emoji_embedding
+                                                                    
+
+
+cosine_sim(old_broccoli, broccoli_embedding)
+cosine_sim(old_combined, combined_embedding)
+cosine_sim(old_placeholder, placeholder_embedding)
+cosine_sim(old_emoji, emoji_embedding)
+     
+                                                                     
