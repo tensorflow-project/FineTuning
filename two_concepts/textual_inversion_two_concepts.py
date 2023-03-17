@@ -350,8 +350,10 @@ stable_diffusion.text_encoder.layers[2].trainable = True
 
 def traverse_layers(layer):
     """ Traverses the layers and embedding attributes of a layer
+    
     Args:
     - layer: A text encoder layer
+    
     Yields:
     -  layers and their corresponding embedding attributes
     """
@@ -380,8 +382,6 @@ all_models = [
     stable_diffusion.decoder,
 ]
 
-
-
 # Remove the top layer from the encoder, which cuts off the variance and only returns the mean
 ### we make the encoder more efficient while still preserving the most important features
 training_image_encoder = keras.Model(
@@ -392,9 +392,11 @@ training_image_encoder = keras.Model(
 
 def sample_from_encoder_outputs(outputs):
     """Returns a random sample from the embedding distribution given the mean and log variance tensors
+    
     Args:
-    - outputs: A tensor of shape (batch_size, embedding_dim*2), where the first embedding_dim values correspond to the mean of the distribution, 
+    - outputs (tensor): A tensor of shape (batch_size, embedding_dim*2), where the first embedding_dim values correspond to the mean of the distribution, 
                and the second embedding_dim values correspond to the log variance of the distribution
+    
     Returns:
     - a tensor of shape (batch_size, embedding_dim), representing a random sample from the embedding distribution
     """
@@ -407,10 +409,12 @@ def sample_from_encoder_outputs(outputs):
 
 def get_timestep_embedding(timestep, dim=320, max_period=10000):
     """Returns the embedding of a specific timestep in the denoising process
+    
     Args:
     - timestep (int): The timestep for which the embedding is requested
     - dim (int, optional): The dimensionality of the embedding, default is 320
     - max_period (int, optional): The maximum period, default is 10000
+    
     Returns:
     - embedding (tf.Tensor): A tensor of shape (dim,) containing the embedding of the specified timestep
     """
@@ -435,6 +439,7 @@ def get_timestep_embedding(timestep, dim=320, max_period=10000):
 def get_position_ids():
     """returns position IDs for the transformer model,
         the IDs range from 0 to MAX_PROMPT_LENGTH-1
+        
     Returns:
     - position_ids (tf.Tensor): A tensor of shape (1, MAX_PROMPT_LENGTH) containing the position IDs
     """
