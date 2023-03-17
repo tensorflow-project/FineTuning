@@ -454,6 +454,17 @@ def get_position_ids():
     
     
 class StableDiffusionFineTuner(keras.Model):
+    """A Keras model for fine-tuning a Stable Diffusion model on a specific dataset.
+
+    This model uses a Stable Diffusion model, which is a generative model that produces images by
+    iteratively adding noise to an image. During training, the model predicts the amount of noise to add at each
+    time step, based on the current image and a prompt (text input). This model fine-tunes the Stable Diffusion
+    model on a specific dataset by training it on pairs of images and their corresponding prompts.
+
+    Args:
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to fine-tune
+    - noise_scheduler (NoiseScheduler): A noise scheduler to determine the amount of noise to add at each time step
+    """
     def __init__(self, stable_diffusion, noise_scheduler, **kwargs):
         super().__init__(**kwargs)
         self.stable_diffusion = stable_diffusion
