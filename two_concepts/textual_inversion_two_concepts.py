@@ -178,8 +178,7 @@ def assemble_dataset(urls, prompts, placeholder_token):
     # we have found that this anecdotally improves results.
     text_dataset = text_dataset.repeat(5)
     return tf.data.Dataset.zip((image_dataset, text_dataset))    
-     
-
+    
 def get_embedding(token):
     """Encodes a given token into a vector embedding using a pre-trained text encoder model.
 
@@ -608,10 +607,23 @@ broccoli_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf
 broccoli.append(broccoli_embeddings)
 emoji_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(emoji_tokenized))
 
+### define for later usage
 old_weights = []
 percent = 0.5
 
 def percentage_emoji(percent):
+    """Replaces a portion of the token embeddings in a StableDiffusion model's text encoder with emoji embeddings.
+
+    The function takes a percentage value `percent` between 0 and 1 and computes a weighted sum of the original token
+    embeddings and the emoji embeddings, where the weights are (1-percent) and percent, respectively. The resulting
+    combined weights are then used to replace the last row of the token embedding matrix in the text encoder.
+
+    Args:
+    - percent (float): The percentage of emoji embeddings to use, as a float between 0 and 1
+
+    Returns:
+    - None
+    """
     combined_weights = broccoli_embeddings + (percent*(emoji_embeddings - broccoli_embeddings))
     old_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
     old_weights = old_weights[0]
@@ -620,9 +632,19 @@ def percentage_emoji(percent):
     stable_diffusion.text_encoder.layers[2].token_embedding.set_weights([old_weights])
     
 def cosine_sim(e1,e2):
+    """Calculate the cosine similarity between two vectors.
+
+    Args:
+    - e1 (array): First vector
+    - e2 (array): Second vector
+
+    Returns:
+    - float: The cosine similarity between the two vectors
+    """
     sim = dot(e1, e2)/(norm(e1)*norm(e2))
     return sim
  
+### get embeddings
 broccoli_embedding = get_embedding("broccoli")
 placeholder_embedding = get_embedding(placeholder_token_broccoli)
 emoji_embedding = get_embedding(placeholder_token_emoji)
@@ -646,10 +668,12 @@ cosine_sim(old_emoji, emoji_embedding)
 def image_generation(prompt, drive_folder, number):
     """Generates an image using stable diffusion model by passing a string with a placeholder token. 
     The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
+    
     Args:
     - prompt (str): The prompt used for generating the image
     - drive_folder (str): The path to the Google Drive folder where the image will be saved
     - number (int): How many images are to be generated
+    
     Returns:
     - None
     """
