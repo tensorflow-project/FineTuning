@@ -50,7 +50,7 @@ stable_diffusion = StableDiffusion()
 def plot_images(images):
     """function to plot images in subplots
      Args: 
-      - images: numpy arrays we want to visualize
+      - images (array): numpy arrays we want to visualize
     """
     plt.figure(figsize=(20, 20))
     for i in range(len(images)):
@@ -62,12 +62,15 @@ def plot_images(images):
 def assemble_image_dataset(urls):
     """Downloads a list of image URLs, resizes and normalizes the images, shuffles them, and adds random noise to create a 
     TensorFlow dataset object for them. 
+
     Args:
-    - urls: A list of image URLs to download and use for the dataset.
+    - urls (list): A list of image URLs to download and use for the dataset
+
     Returns:
-    - image_dataset: A TensorFlow dataset object containing the preprocessed images.
+    - image_dataset (ds): A TensorFlow dataset object containing the preprocessed images
+
     Notes:
-    - This function assumes that all images have the same dimensions and color channels. 
+    - This function assumes that all images have the same dimensions and color channels
     """
   
     # Fetch all remote files
@@ -111,24 +114,41 @@ placeholder_token_combined = "<my-broccoli-emoji-token>"
 
 
 def pad_embedding(embedding):
-    ### pad the text embedding to have equal prompt length
+    """Pads the input embedding with the end-of-text token to ensure that it has the same length as the maximum prompt length.
+
+    Args:
+    - embedding (list): A list of tokens representing the input embedding
+
+    Returns:
+    - padded_embedding (list): A list of tokens representing the padded input embedding
+    """
     return embedding + (
         [stable_diffusion.tokenizer.end_of_text] * (MAX_PROMPT_LENGTH - len(embedding))
     )
 
-
+### Add our placeholder_tokens to our stable_diffusion Model
 stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
 stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
 stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
 
 
 def assemble_text_dataset(prompts, placeholder_token):
-    """ creates text dataset consisting of prompt embeddings"""
+    """Creates a text dataset consisting of prompt embeddings. 
+    
+    Args:
+    - prompts (str): A list of string prompts to be encoded and turned into embeddings
+    - placeholder_token (str): our placeholder token
+  
+    Returns:
+    - text_dataset: A text dataset containing the prompt embeddings
+    """
     ### inserts our placeholder_token into the different prompts
     prompts = [prompt.format(placeholder_token) for prompt in prompts]
+    
     ### prompts are tokenized and encoded and then added to the embedding
     embeddings = [stable_diffusion.tokenizer.encode(prompt) for prompt in prompts]
     embeddings = [np.array(pad_embedding(embedding)) for embedding in embeddings]
+    
     ### creates a dataset consisting of the different prompt embeddings and shuffles it
     text_dataset = tf.data.Dataset.from_tensor_slices(embeddings)
     text_dataset = text_dataset.shuffle(100, reshuffle_each_iteration=True)
@@ -136,12 +156,14 @@ def assemble_text_dataset(prompts, placeholder_token):
     
 def assemble_dataset(urls, prompts, placeholder_token):
     """ Assembles a TensorFlow Dataset containing pairs of images and text prompts.
+
     Args:
     - urls: A list of URLs representing the image dataset
     - prompts: A list of text prompts corresponding to the images
     - placeholder_token: A string token representing the location where the prompt text will be inserted in the final text
+
     Returns:
-    - A TensorFlow Dataset object containing pairs of images and their corresponding text prompts.
+    - A TensorFlow Dataset object containing pairs of images and their corresponding text prompts
     """
     ### creating the image and test dataset
     image_dataset = assemble_image_dataset(urls)
@@ -159,6 +181,17 @@ def assemble_dataset(urls, prompts, placeholder_token):
      
 
 def get_embedding(token):
+    """Encodes a given token into a vector embedding using a pre-trained text encoder model.
+
+    Args:
+    - token (str): A single word or token to encode into a vector embedding
+
+    Returns:
+    - A tensor vector representing the embedding for the given token
+
+    Raises:
+    - ValueError: If the input token is empty or None
+    """
   tokenized = stable_diffusion.tokenizer.encode(token)[1]
   embedding = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized))
 
