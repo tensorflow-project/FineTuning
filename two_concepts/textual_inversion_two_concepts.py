@@ -192,10 +192,10 @@ def get_embedding(token):
     Raises:
     - ValueError: If the input token is empty or None
     """
-  tokenized = stable_diffusion.tokenizer.encode(token)[1]
-  embedding = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized))
+    tokenized = stable_diffusion.tokenizer.encode(token)[1]
+    embedding = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized))
 
-  return embedding
+    return embedding
   
 broccoli_ds = assemble_dataset(
     urls = [
