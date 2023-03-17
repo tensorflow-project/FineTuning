@@ -27,6 +27,12 @@ from google.colab import drive
 from PIL import Image
 import shutil
 
+###select path to find the models used here
+py_file_location = "/content/FineTuning"
+sys.path.append(os.path.abspath(py_file_location))
+py_file_location = "/content/FineTuning/models"
+sys.path.append(os.path.abspath(py_file_location))
+
 ### import the different models from our Github repository
 #from text_encoder import TextEncoder
 #from decoder import Decoder
