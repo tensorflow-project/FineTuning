@@ -27,6 +27,7 @@ from google.colab import drive
 from PIL import Image
 import shutil
 
+###select path to find the models used here
 py_file_location = "/content/FineTuning"
 sys.path.append(os.path.abspath(py_file_location))
 py_file_location = "/content/FineTuning/models"
