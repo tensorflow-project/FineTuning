@@ -51,7 +51,7 @@ stable_diffusion = StableDiffusion()
 def plot_images(images):
     """function to plot images in subplots
      Args: 
-      - images: numpy arrays we want to visualize
+      - images (array): numpy arrays we want to visualize
     """
     plt.figure(figsize=(20, 20))
     for i in range(len(images)):
@@ -65,13 +65,13 @@ def assemble_image_dataset(urls):
     TensorFlow dataset object for them. 
 
     Args:
-    - urls: A list of image URLs to download and use for the dataset.
+    - urls (list): A list of image URLs to download and use for the dataset
 
     Returns:
-    - image_dataset: A TensorFlow dataset object containing the preprocessed images.
+    - image_dataset (ds): A TensorFlow dataset object containing the preprocessed images
 
     Notes:
-    - This function assumes that all images have the same dimensions and color channels. 
+    - This function assumes that all images have the same dimensions and color channels
     """
   
     # Fetch all remote files
@@ -118,10 +118,10 @@ def pad_embedding(embedding):
     """Pads the input embedding with the end-of-text token to ensure that it has the same length as the maximum prompt length.
 
     Args:
-    - embedding: A list of tokens representing the input embedding.
+    - embedding (list): A list of tokens representing the input embedding
 
     Returns:
-    - padded_embedding: A list of tokens representing the padded input embedding.
+    - padded_embedding (list): A list of tokens representing the padded input embedding
     """
     return embedding + (
         [stable_diffusion.tokenizer.end_of_text] * (MAX_PROMPT_LENGTH - len(embedding))
@@ -133,12 +133,13 @@ stable_diffusion.tokenizer.add_tokens(placeholder_token)
 
 def assemble_text_dataset(prompts, placeholder_token):
     """Creates a text dataset consisting of prompt embeddings. 
-
+    
     Args:
-    - prompts: A list of string prompts to be encoded and turned into embeddings.
-
+    - prompts (str): A list of string prompts to be encoded and turned into embeddings
+    - placeholder_token (str): our placeholder token
+  
     Returns:
-    - text_dataset: A text dataset containing the prompt embeddings.
+    - text_dataset: A text dataset containing the prompt embeddings
     """
     ### inserts our placeholder_token into the different prompts
     prompts = [prompt.format(placeholder_token) for prompt in prompts]
@@ -162,7 +163,7 @@ def assemble_dataset(urls, prompts, placeholder_token):
     - placeholder_token: A string token representing the location where the prompt text will be inserted in the final text
 
     Returns:
-    - A TensorFlow Dataset object containing pairs of images and their corresponding text prompts.
+    - A TensorFlow Dataset object containing pairs of images and their corresponding text prompts
     """
     ### creating the image and test dataset
     image_dataset = assemble_image_dataset(urls)
@@ -603,6 +604,17 @@ def cosine_sim(e1, e2):
   return sim
 
 def get_embedding(token):
+    """Encodes a given token into a vector embedding using a pre-trained text encoder model.
+
+    Args:
+    - token (str): A single word or token to encode into a vector embedding
+
+    Returns:
+    - A tensor vector representing the embedding for the given token
+
+    Raises:
+    - ValueError: If the input token is empty or None
+    """
   tokenized = stable_diffusion.tokenizer.encode(token)[1]
   embedding = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized))
 
