@@ -196,7 +196,8 @@ def get_embedding(token):
     embedding = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized))
 
     return embedding
-  
+
+### create a dataset consisting of broccoli stickers prompts
 broccoli_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/9zAwPyt.jpg",
@@ -231,6 +232,7 @@ broccoli_ds = assemble_dataset(
     placeholder_token = placeholder_token_broccoli
 )  
 
+### create a dataset consisting of happy emojis and happy prompts
 emoji_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/BLLMggR.png",
@@ -264,7 +266,7 @@ emoji_ds = assemble_dataset(
     placeholder_token = placeholder_token_emoji
 )
 
-
+### concatenate the different datasets
 train_ds = emoji_ds.concatenate(broccoli_ds)
 train_ds = train_ds.batch(1).shuffle(
     train_ds.cardinality(), reshuffle_each_iteration=True)
@@ -272,29 +274,31 @@ train_ds = train_ds.batch(1).shuffle(
 ### defining concept we want to build our new concept on
 tokenized_initializer = stable_diffusion.tokenizer.encode("broccoli")[1]
 
-### set the weights for the embedding layer's token embedding to include the new token's embedding weights.
+### get the embedding of our basis concept to clone it to our new placeholder's embedding
 new_weights_broccoli = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer))
 
 # Get len of .vocab instead of tokenizer
 new_vocab_size = len(stable_diffusion.tokenizer.vocab)
 
 # The embedding layer is the 2nd layer in the text encoder
+### get the weights of the embedding layer
 old_token_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
 old_position_weights = stable_diffusion.text_encoder.layers[2].position_embedding.get_weights()
 
+### unpack the old weights
 old_token_weights = old_token_weights[0]
+
+### old_token_weights has now the shape (vocab_size, embedding_dim)
+### expand the dimension to be able to concatenate it with old_token_weights
 new_weights_broccoli = np.expand_dims(new_weights_broccoli, axis=0)
 new_weights_broccoli = np.concatenate([old_token_weights, new_weights_broccoli], axis=0)
 
 
-##### same for emoji token
+### same for emoji token
 ### defining concept we want to build our new concept on 
-
 tokenized_initializer_emoji = stable_diffusion.tokenizer.encode("emoji")[1]
 
-
 new_weights_emoji = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer_emoji))
-
 new_weights_emoji = np.expand_dims(new_weights_emoji, axis=0)
 
 ### concatenate the weights for the new embedding at the end of our weights (~)
@@ -302,10 +306,9 @@ new_weights = np.concatenate([new_weights_broccoli, new_weights_emoji], axis=0)
 
 tokenized_combined = stable_diffusion.tokenizer.encode("broccolis sticker")[1]
 
+### combine new weights
 new_weights_combined = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_combined))
-
 new_weights_combined = np.expand_dims(new_weights_combined, axis=0)
-
 new_weights = np.concatenate([new_weights, new_weights_combined], axis=0)
 
 test_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
