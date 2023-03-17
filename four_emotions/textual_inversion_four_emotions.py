@@ -214,7 +214,7 @@ happy_ds = assemble_dataset(
     placeholder_token = placeholder_token
 )
 
-
+### create a dataset consisting of broccoli in love stickers and matching prompts
 love_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/hFqqp3p.jpg",
@@ -249,6 +249,7 @@ love_ds = assemble_dataset(
     placeholder_token = placeholder_token
 )
 
+### create a dataset consisting of sad broccoli stickers and matching prompts
 sad_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/hlkuxBX.jpg",
@@ -282,6 +283,7 @@ sad_ds = assemble_dataset(
     placeholder_token=placeholder_token
 )
 
+### create a dataset consisting of sad broccoli stickers and matching prompts
 angry_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/mZswnIx.jpg",
@@ -425,10 +427,6 @@ all_models = [
     stable_diffusion.decoder,
 ]
 
-### check that only in the text encoder we have trainable weights
-print([[w.shape for w in model.trainable_weights] for model in all_models])
-
-
 # Remove the top layer from the encoder, which cuts off the variance and only returns the mean
 ### we make the encoder more efficient while still preserving the most important features
 training_image_encoder = keras.Model(
@@ -455,7 +453,7 @@ def sample_from_encoder_outputs(outputs):
 
 
 def get_timestep_embedding(timestep, dim=320, max_period=10000):
-    """Returns the embedding of a specific timestep in the denoising process
+    """Returns the embedding of a specific timestep in the denoising process.
 
     Args:
     - timestep (int): The timestep for which the embedding is requested
