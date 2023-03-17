@@ -472,6 +472,15 @@ class StableDiffusionFineTuner(keras.Model):
         self.noise_scheduler = noise_scheduler
 
     def train_step(self, data):
+        """Runs a single training step on the model.
+
+        Args:
+        - data (tuple): A tuple containing the training images and their corresponding
+                text embeddings
+
+        Returns:
+        - A dictionary containing the current loss value.
+        """
         images, embeddings = data
 
         with tf.GradientTape() as tape:
@@ -484,10 +493,11 @@ class StableDiffusionFineTuner(keras.Model):
 
             # Produce random noise in the same shape as the latent sample
             noise = tf.random.normal(tf.shape(latents))
-            ### get the batch dimension
+            ### get the batch dimension of our input data
             batch_dim = tf.shape(latents)[0]
 
             # Pick a random timestep for each sample in the batch
+            ### for each sample in the batch we choose a different random timestep to later determine the specific timestep embedding
             timesteps = tf.random.uniform(
                 (batch_dim,),
                 minval=0,
@@ -506,7 +516,6 @@ class StableDiffusionFineTuner(keras.Model):
             )
 
             # Compute timestep embeddings for the randomly-selected timesteps for each sample in the batch
-            ### ????
             timestep_embeddings = tf.map_fn(
                 fn=get_timestep_embedding,
                 elems=timesteps,
@@ -514,7 +523,7 @@ class StableDiffusionFineTuner(keras.Model):
             )
 
             # Call the diffusion model
-            ### calculate the noise predictions for each pixel(?)
+            ### calculate the noise predictions with help of the latents, the time step embeddings and the output of the encoder
             noise_pred = self.stable_diffusion.diffusion_model(
                 [noisy_latents, timestep_embeddings, encoder_hidden_state]
             )
@@ -533,7 +542,9 @@ class StableDiffusionFineTuner(keras.Model):
         # Gradients are stored in indexed slices, so we have to find the index
         # of the slice(s) which contain the placeholder token.
         index_of_placeholder_token = tf.reshape(tf.where(grads[0].indices == 49408), ())
+        ### we only want to update the gradient of the placeholder token, therefore we create the tensor condition which has the value true for the index of the placeholder token (49408) and otherwise false
         condition = grads[0].indices == 49408
+        ### add an extra dimension to later zero out the gradients for other tokens
         condition = tf.expand_dims(condition, axis=-1)
 
         # Override the gradients, zeroing out the gradients for all slices that
@@ -544,15 +555,19 @@ class StableDiffusionFineTuner(keras.Model):
             indices=grads[0].indices,
             dense_shape=grads[0].dense_shape,
         )
-
+        
+        ### apply the gradients to the trainable weights of the encoder and thus only training the placeholder token's embedding
         self.optimizer.apply_gradients(zip(grads, trainable_weights))
         return {"loss": loss}
      
 
-### beta is the diffusion rate (what does it do exactly?)
+### beta is the diffusion rate
 noise_scheduler = NoiseScheduler(
+    ### beta_start determines the amount of noise added at the start of the denoising process
     beta_start=0.00085,
+    ### beta_end at the end of the denoising process
     beta_end=0.012,
+    ### the beta_schedule determines that the diffusion rate increases linearly
     beta_schedule="scaled_linear",
     train_timesteps=1000,
 )
