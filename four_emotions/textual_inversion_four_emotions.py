@@ -439,7 +439,7 @@ def sample_from_encoder_outputs(outputs):
     """Returns a random sample from the embedding distribution given the mean and log variance tensors
 
     Args:
-    - outputs: A tensor of shape (batch_size, embedding_dim*2), where the first embedding_dim values correspond to the mean of the distribution, 
+    - outputs (tensor): A tensor of shape (batch_size, embedding_dim*2), where the first embedding_dim values correspond to the mean of the distribution, 
                and the second embedding_dim values correspond to the log variance of the distribution
 
     Returns:
@@ -598,6 +598,15 @@ optimizer = keras.optimizers.Adam(
 )
 
 def cosine_sim(e1, e2):
+    """Calculate the cosine similarity between two vectors.
+
+    Args:
+    - e1 (array): First vector
+    - e2 (array): Second vector
+
+    Returns:
+    - float: The cosine similarity between the two vectors
+    """
   sim = dot(e1, e2)/(norm(e1)*norm(e2))
   return sim
 
@@ -626,6 +635,18 @@ cosine_similarity.append(cosine_sim(broccoli, get_embedding(placeholder_token)))
 
 
 def training(epoch=5, model=stable_diffusion, data = train_ds):
+    """Trains the Stable Diffusion model for a specified number of epochs by iterating over a given dataset, and computing
+    textual inversions for each batch of data. After each epoch, the embedding of the placeholder token is retrieved
+    and its cosine similarity with the broccoli emoji embedding is computed and stored in a list.
+
+    Args:
+    - epoch (int): The number of epochs to train the model for. Default is 5
+    - model (keras.Model): The Stable Diffusion model to train. Default is `stable_diffusion`
+    - data (tf.data.Dataset): The dataset to train the model on. Default is `train_ds`
+
+    Returns:
+    - None
+    """
     for i in range(epoch):
         for batch in data:
             textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
@@ -635,6 +656,15 @@ def training(epoch=5, model=stable_diffusion, data = train_ds):
         cosine_similarity.append(cosine_sim(broccoli, emb))
 
 def cosine_plot(epoch_num, cosine_similarity):
+    """Plot the cosine similarity between the basis and the new concept across epochs.
+
+    Args:
+    - epoch_num (list): A list of epoch numbers
+    - cosine_similarity (list): A list of cosine similarity scores between the basis and the new concept
+
+    Returns:
+    - None. Shows a plot of the cosine similarity scores across epochs.
+    """
     plt.plot(epoch_num, cosine_similarity)
     plt.xlabel("Number of Epochs")
     plt.ylabel("Cosine Similarity")
