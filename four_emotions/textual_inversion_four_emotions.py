@@ -627,14 +627,7 @@ def get_embedding(token):
 
     return embedding
 
-
-sticker_embedding = []
-cosine_similarity = []
-broccoli = get_embedding("broccoli")
-cosine_similarity.append(cosine_sim(broccoli, get_embedding(placeholder_token)))
-
-
-def training(epoch=5, model=stable_diffusion, data = train_ds):
+def training(epoch=5, model=stable_diffusion, data = train_ds, sticker_embedding, cosine_similarity):
     """Trains the Stable Diffusion model for a specified number of epochs by iterating over a given dataset, and computing
     textual inversions for each batch of data. After each epoch, the embedding of the placeholder token is retrieved
     and its cosine similarity with the broccoli emoji embedding is computed and stored in a list.
