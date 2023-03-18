@@ -627,15 +627,15 @@ def get_embedding(token):
 
     return embedding
 
-def training(epoch=5, model=stable_diffusion, data = train_ds, sticker_embedding, cosine_similarity):
+def training(epoch, model, data, sticker_embedding, cosine_similarity):
     """Trains the Stable Diffusion model for a specified number of epochs by iterating over a given dataset, and computing
     textual inversions for each batch of data. After each epoch, the embedding of the placeholder token is retrieved
     and its cosine similarity with the broccoli emoji embedding is computed and stored in a list.
 
     Args:
-    - epoch (int): The number of epochs to train the model for. Default is 5
-    - model (keras.Model): The Stable Diffusion model to train. Default is `stable_diffusion`
-    - data (tf.data.Dataset): The dataset to train the model on. Default is `train_ds`
+    - epoch (int): The number of epochs to train the model for
+    - model (keras.Model): The Stable Diffusion model to train
+    - data (tf.data.Dataset): The dataset to train the model on
 
     Returns:
     - None
