@@ -607,8 +607,8 @@ def cosine_sim(e1, e2):
     Returns:
     - float: The cosine similarity between the two vectors
     """
-  sim = dot(e1, e2)/(norm(e1)*norm(e2))
-  return sim
+    sim = dot(e1, e2)/(norm(e1)*norm(e2))
+    return sim
 
 def get_embedding(token):
     """Encodes a given token into a vector embedding using a pre-trained text encoder model.
@@ -622,10 +622,10 @@ def get_embedding(token):
     Raises:
     - ValueError: If the input token is empty or None
     """
-  tokenized = stable_diffusion.tokenizer.encode(token)[1]
-  embedding = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized))
+    tokenized = stable_diffusion.tokenizer.encode(token)[1]
+    embedding = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized))
 
-  return embedding
+    return embedding
 
 
 sticker_embedding = []
