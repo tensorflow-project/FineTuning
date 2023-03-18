@@ -646,7 +646,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity):
             
         emb = get_embedding(placeholder_token)
         sticker_embedding.append(emb)
-        cosine_similarity.append(cosine_sim(broccoli, emb))
+        cosine_similarity.append(cosine_sim(get_embedding("broccoli", emb))
 
 def cosine_plot(epoch_num, cosine_similarity):
     """Plot the cosine similarity between the basis and the new concept across epochs.
