@@ -646,7 +646,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity):
             
         emb = get_embedding(placeholder_token)
         sticker_embedding.append(emb)
-        cosine_similarity.append(cosine_sim(get_embedding("broccoli", emb))
+        cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))
 
 def cosine_plot(epoch_num, cosine_similarity):
     """Plot the cosine similarity between the basis and the new concept across epochs.
@@ -656,7 +656,7 @@ def cosine_plot(epoch_num, cosine_similarity):
     - cosine_similarity (list): A list of cosine similarity scores between the basis and the new concept
 
     Returns:
-    - None. Shows a plot of the cosine similarity scores across epochs.
+    - None. Shows a plot of the cosine similarity scores across epochs
     """
     plt.plot(epoch_num, cosine_similarity)
     plt.xlabel("Number of Epochs")
