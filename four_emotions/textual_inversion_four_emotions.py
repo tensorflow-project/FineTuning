@@ -628,25 +628,47 @@ def get_embedding(token):
     return embedding
 
 def training(epoch, model, data, sticker_embedding, cosine_similarity):
-    """Trains the Stable Diffusion model for a specified number of epochs by iterating over a given dataset, and computing
-    textual inversions for each batch of data. After each epoch, the embedding of the placeholder token is retrieved
-    and its cosine similarity with the broccoli emoji embedding is computed and stored in a list.
+    """Trains the Stable Diffusion model using the given dataset for the specified number of epochs.
+    For each batch in the dataset, a textual inversion is computed using the trained model.
+    After each epoch, the embedding of the placeholder token is retrieved and its cosine similarity with the broccoli
+    emoji embedding is computed and stored in a list.
 
     Args:
     - epoch (int): The number of epochs to train the model for
-    - model (keras.Model): The Stable Diffusion model to train
-    - data (tf.data.Dataset): The dataset to train the model on
+    - model (keras.Model): The Stable Diffusion model to be trained
+    - data (tf.data.Dataset): The dataset to use for training
+    - sticker_embedding (list): A list to store embeddings of the placeholder token after each epoch
+    - cosine_similarity (list): A list to store cosine similarities between the embeddings of the placeholder token and
+      the broccoli emoji embedding after each epoch
 
     Returns:
     - None
     """
-    for i in range(epoch):
+
+    """for i in range(epoch):
         for batch in data:
             textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
             
         emb = get_embedding(placeholder_token)
         sticker_embedding.append(emb)
-        cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))
+        cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))"""
+    for i in range(epoch):
+    ### Wrap the dataset iterator with tqdm to show progress
+    for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
+        ### Perform training on the batch
+        with tf.GradientTape() as tape:
+            # Compute the forward pass of the model
+            loss = compute_loss(model, batch)
+
+        # Compute gradients and update model parameters
+        gradients = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+
+    # Compute the embedding of the placeholder token and the cosine similarity
+    # with the broccoli emoji embedding
+    emb = get_embedding(placeholder_token)
+    sticker_embedding.append(emb)
+    cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))
 
 def cosine_plot(epoch_num, cosine_similarity):
     """Plot the cosine similarity between the basis and the new concept across epochs.
