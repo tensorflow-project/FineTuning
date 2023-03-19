@@ -26,6 +26,7 @@ import sys
 from google.colab import drive
 from PIL import Image
 import shutil
+from tqdm import tqdm
 
 ###select path to find the models used here
 py_file_location = "/content/FineTuning"
