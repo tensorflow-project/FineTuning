@@ -654,21 +654,21 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity):
         cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))"""
     for i in range(epoch):
     ### Wrap the dataset iterator with tqdm to show progress
-    for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
-        ### Perform training on the batch
-        with tf.GradientTape() as tape:
-            # Compute the forward pass of the model
-            loss = compute_loss(model, batch)
+        for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
+            ### Perform training on the batch
+            with tf.GradientTape() as tape:
+                # Compute the forward pass of the model
+                loss = compute_loss(model, batch)
 
-        # Compute gradients and update model parameters
-        gradients = tape.gradient(loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+            # Compute gradients and update model parameters
+            gradients = tape.gradient(loss, model.trainable_variables)
+            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
-    # Compute the embedding of the placeholder token and the cosine similarity
-    # with the broccoli emoji embedding
-    emb = get_embedding(placeholder_token)
-    sticker_embedding.append(emb)
-    cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))
+        # Compute the embedding of the placeholder token and the cosine similarity
+        # with the broccoli emoji embedding
+        emb = get_embedding(placeholder_token)
+        sticker_embedding.append(emb)
+        cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))
 
 def cosine_plot(epoch_num, cosine_similarity):
     """Plot the cosine similarity between the basis and the new concept across epochs.
