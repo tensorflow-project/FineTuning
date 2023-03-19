@@ -573,7 +573,6 @@ def textual_inversion(model, noise_scheduler, data):
         optimizer.apply_gradients(zip(gradients, trainable_weights))
 
         return {"loss": loss}
-        #return loss
 
 
 ### beta is the diffusion rate 
@@ -646,22 +645,14 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity):
     Returns:
     - None
     """
-
-    """for i in range(epoch):
-        for batch in data:
-            textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
-            
-        emb = get_embedding(placeholder_token)
-        sticker_embedding.append(emb)
-        cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))"""
     for i in range(epoch):
     ### Wrap the dataset iterator with tqdm to show progress
         for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
             # Compute the forward pass of the model
             loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
 
-        # Compute the embedding of the placeholder token and the cosine similarity
-        # with the broccoli emoji embedding
+        ### Compute the embedding of the placeholder token and the cosine similarity
+        ### with the broccoli emoji embedding
         emb = get_embedding(placeholder_token)
         sticker_embedding.append(emb)
         cosine_similarity.append(cosine_sim(get_embedding("broccoli"), emb))
