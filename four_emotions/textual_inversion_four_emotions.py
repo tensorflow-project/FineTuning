@@ -572,8 +572,8 @@ def textual_inversion(model, noise_scheduler, data):
         ### apply the gradients to the trainable weights of the encoder and thus only training the placeholder token's embedding
         optimizer.apply_gradients(zip(gradients, trainable_weights))
 
-        #return {"loss": loss}
-        return loss
+        return {"loss": loss}
+        #return loss
 
 
 ### beta is the diffusion rate 
@@ -657,14 +657,8 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity):
     for i in range(epoch):
     ### Wrap the dataset iterator with tqdm to show progress
         for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
-            ### Perform training on the batch
-            with tf.GradientTape() as tape:
-                # Compute the forward pass of the model
-                loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
-
-            # Compute gradients and update model parameters
-            gradients = tape.gradient(loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+            # Compute the forward pass of the model
+            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
 
         # Compute the embedding of the placeholder token and the cosine similarity
         # with the broccoli emoji embedding
