@@ -572,7 +572,8 @@ def textual_inversion(model, noise_scheduler, data):
         ### apply the gradients to the trainable weights of the encoder and thus only training the placeholder token's embedding
         optimizer.apply_gradients(zip(gradients, trainable_weights))
 
-        return {"loss": loss}
+        #return {"loss": loss}
+        return loss
 
 
 ### beta is the diffusion rate 
@@ -659,7 +660,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity):
             ### Perform training on the batch
             with tf.GradientTape() as tape:
                 # Compute the forward pass of the model
-                loss = compute_loss(model, batch)
+                loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
 
             # Compute gradients and update model parameters
             gradients = tape.gradient(loss, model.trainable_variables)
