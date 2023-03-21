@@ -16,7 +16,6 @@
 Credits:
 
 - Original implementation: https://github.com/CompVis/stable-diffusion
-- Initial TF/Keras port: https://github.com/divamgupta/stable-diffusion-tensorflow
 
 The current implementation is a rewrite of the initial TF/Keras port by Divam Gupta.
 """
@@ -144,7 +143,6 @@ class StableDiffusionBase:
         seed=None,
     ):
         """Generates an image based on encoded text.
-
         The encoding passed to this method should be derived from
         `StableDiffusion.encode_text`.
 
@@ -263,6 +261,8 @@ class StableDiffusionBase:
         verbose=True,
     ):
         """Inpaints a masked section of the provided image based on the provided prompt.
+        Is mostly used for training to provide more stability to the model, is needed to fill in missing or corrupted parts of an image
+        helps to improve visual quality
 
         Args:
         - prompt (string): A string representing the prompt for generation
@@ -280,8 +280,6 @@ class StableDiffusionBase:
               seed the diffusion process. When the batch axis is omitted, the same noise will be used to seed diffusion for every generated image
         - seed (int, optional): is used to seed the random generation of diffusion noise, only to be specified if `diffusion_noise` is None
         - verbose (bool): whether to print progress bar. Default: True
-        Edit: is mostly used for training to provide more stability to the model, is needed to fill in missing or corrupted parts of an image
-        helps to improve visual quality
         """
         if diffusion_noise is not None and seed is not None:
             raise ValueError(
@@ -425,7 +423,6 @@ class StableDiffusionBase:
 
     def _get_unconditional_context(self):
         """Returns the unconditional context for the text encoder
-
         The unconditional context is a tensor representing the encoding of a fixed set of unconditional tokens
 
         Returns:
@@ -445,7 +442,7 @@ class StableDiffusionBase:
         The function first removes any dimensions of size 1 from the tensor using `tf.squeeze()`.
         Then, if the tensor shape rank is 2, it repeats the tensor along the first dimension
         to match the desired batch size using `tf.repeat()`.
-        Finally, the expanded tensor is returned.
+        Then, the expanded tensor is returned.
 
         Args:
         - text_embedding (tf.Tensor): The tensor to be expanded
@@ -467,12 +464,12 @@ class StableDiffusionBase:
     @property
     def image_encoder(self):
     """Returns the VAE Encoder with pretrained weights.
-        The method first checks if the `_image_encoder` attribute is None. If it is, it creates a new
-        instance of the `ImageEncoder` class with the image height and width specified by the
-        `img_height` and `img_width` attributes. If the `jit_compile` attribute is True, the encoder
-        is compiled with JIT compilation enabled. The `_image_encoder` attribute is then set to the
-        newly created encoder instance. Finally, the `_image_encoder` attribute is returned.
-        If the `_image_encoder` attribute is not None, the existing encoder instance is returned.
+    The method first checks if the `_image_encoder` attribute is None. If it is, it creates a new
+    instance of the `ImageEncoder` class with the image height and width specified by the
+    `img_height` and `img_width` attributes. If the `jit_compile` attribute is True, the encoder
+    is compiled with JIT compilation enabled. The `_image_encoder` attribute is then set to the
+    newly created encoder instance. Finally, the `_image_encoder` attribute is returned.
+    If the `_image_encoder` attribute is not None, the existing encoder instance is returned.
 
     Returns:
     - ImageEncoder: The VAE Encoder with pretrained weights
@@ -485,19 +482,22 @@ class StableDiffusionBase:
 
     @property
     def text_encoder(self):
+       """Property that returns the text encoder used by the object.    
+        """
         pass
 
     @property
     def diffusion_model(self):
+        """Property that returns the fiffusion model used by the object.    
+        """
         pass
 
     @property
     def decoder(self):
     """Returns the diffusion image decoder model with pretrained weights.
-
     The decoder model is used to reconstruct images from the latent space generated
     by the diffusion image model. By default, the method returns a pre-trained decoder
-    model that is suitable for a wide range of tasks. However, the method can be overridden
+    model that is suitable for a wide range of tasks. Can be overridden
     to modify the decoder for the Stable Diffusion or to use a different implementation.
 
     Returns:
@@ -520,7 +520,7 @@ class StableDiffusionBase:
         tasks such as the Stable Diffusion or to use a different implementation.
 
         Returns:
-        - An instance of the tokenizer used for text inputs.
+        - An instance of the tokenizer used for text inputs
         """
         if self._tokenizer is None:
             self._tokenizer = SimpleTokenizer()
