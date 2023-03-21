@@ -47,8 +47,7 @@ class StableDiffusionBase:
     Args:
     - img_height (int): height of input image, default is 512
     - img_width (int): width of input image, default is 512
-    - jit_compile (bool): whether to use just-in-time compilation, default is False
-          
+    - jit_compile (bool): whether to use just-in-time compilation, default is False  
     """
     def __init__(
         self,
@@ -91,7 +90,7 @@ class StableDiffusionBase:
         - seed (int): an optional seed for the random number generator, default is None
 
         Returns:
-        - an image generated from the given text prompt
+        - An image generated from the given text prompt
         """
         encoded_text = self.encode_text(prompt)
 
