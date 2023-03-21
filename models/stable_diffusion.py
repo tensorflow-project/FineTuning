@@ -92,7 +92,7 @@ class StableDiffusionBase:
         - seed (int): an optional seed for the random number generator, default is None
 
         Returns:
-        - an image generated from the given text prompt.
+        - an image generated from the given text prompt
         """
         encoded_text = self.encode_text(prompt)
 
