@@ -463,17 +463,17 @@ class StableDiffusionBase:
 
     @property
     def image_encoder(self):
-    """Returns the VAE Encoder with pretrained weights.
-    The method first checks if the `_image_encoder` attribute is None. If it is, it creates a new
-    instance of the `ImageEncoder` class with the image height and width specified by the
-    `img_height` and `img_width` attributes. If the `jit_compile` attribute is True, the encoder
-    is compiled with JIT compilation enabled. The `_image_encoder` attribute is then set to the
-    newly created encoder instance. Finally, the `_image_encoder` attribute is returned.
-    If the `_image_encoder` attribute is not None, the existing encoder instance is returned.
+        """Returns the VAE Encoder with pretrained weights.
+        The method first checks if the `_image_encoder` attribute is None. If it is, it creates a new
+        instance of the `ImageEncoder` class with the image height and width specified by the
+        `img_height` and `img_width` attributes. If the `jit_compile` attribute is True, the encoder
+        is compiled with JIT compilation enabled. The `_image_encoder` attribute is then set to the
+        newly created encoder instance. Finally, the `_image_encoder` attribute is returned.
+        If the `_image_encoder` attribute is not None, the existing encoder instance is returned.
 
-    Returns:
-    - ImageEncoder: The VAE Encoder with pretrained weights
-    """
+        Returns:
+        - ImageEncoder: The VAE Encoder with pretrained weights
+        """
         if self._image_encoder is None:
             self._image_encoder = ImageEncoder(self.img_height, self.img_width)
             if self.jit_compile:
