@@ -601,7 +601,7 @@ noise_scheduler = NoiseScheduler(
 )"""
 ### inizialize the optimizer
 optimizer = keras.optimizers.Adam(
-    weight_decay=0.004, learning_rate=1e-5, epsilon=1e-8, global_clipnorm=10
+    weight_decay=0.004, learning_rate=1e-4, epsilon=1e-8, global_clipnorm=10
 )
 
 def cosine_sim(e1, e2):
