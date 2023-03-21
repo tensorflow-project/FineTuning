@@ -69,6 +69,7 @@ class TextEncoder(keras.Model):
 
 ### same as above but different layers
 class TextEncoderV2(keras.Model):
+    """Alternative Transformer-based text encoder for the OpenAI CLIP model. See above"""
     def __init__(self, max_length, vocab_size=49408, name=None, download_weights=True):
         
         tokens = keras.layers.Input(
@@ -91,8 +92,21 @@ class TextEncoderV2(keras.Model):
             )
             self.load_weights(text_encoder_weights_fpath)
 
-### defines the activation function
 def quick_gelu(x):
+    """Applies the Quick GELU activation function to the input tensor.
+
+    Quick GELU is a modified version of the GELU activation function, which is
+    defined as x * P(X <= x), where P is the cumulative distribution function
+    of a standard Gaussian distribution. Quick GELU approximates the GELU
+    function with a simpler and faster formula.
+
+    Args:
+    - x (tensor): Input tensor to apply the Quick GELU activation function to
+
+    Returns:
+    - Tensor with the same shape as the input, after applying the Quick GELU
+        activation function element-wise
+    """
     return x * tf.sigmoid(x * 1.702)
 
 
