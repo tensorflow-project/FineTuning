@@ -50,7 +50,6 @@ class StableDiffusionBase:
     - jit_compile (bool): whether to use just-in-time compilation, default is False
           
     """
-
     def __init__(
         self,
         img_height=512,
@@ -431,7 +430,7 @@ class StableDiffusionBase:
         The unconditional context is a tensor representing the encoding of a fixed set of unconditional tokens
 
         Returns:
-        - unconditional_context (tensor): Tensor representing the unconditional context.
+        - unconditional_context (tensor): Tensor representing the unconditional context
         """
         unconditional_tokens = tf.convert_to_tensor(
             [_UNCONDITIONAL_TOKENS], dtype=tf.int32
@@ -443,7 +442,22 @@ class StableDiffusionBase:
         return unconditional_context
 
     def _expand_tensor(self, text_embedding, batch_size):
-        """Extends a tensor by repeating it to fit the shape of the given batch size."""
+        """Expands a tensor by repeating it to fit the shape of the given batch size. 
+        The function first removes any dimensions of size 1 from the tensor using `tf.squeeze()`.
+        Then, if the tensor shape rank is 2, it repeats the tensor along the first dimension
+        to match the desired batch size using `tf.repeat()`.
+        Finally, the expanded tensor is returned.
+
+        Args:
+        - text_embedding (tf.Tensor): The tensor to be expanded
+        - batch_size (int): The desired batch size
+
+        Returns:
+        - tf.Tensor: The expanded tensor
+
+        Raises:
+        - ValueError: If the tensor rank is not 2.
+        """
         text_embedding = tf.squeeze(text_embedding)
         if text_embedding.shape.rank == 2:
             text_embedding = tf.repeat(
@@ -453,7 +467,17 @@ class StableDiffusionBase:
 
     @property
     def image_encoder(self):
-        """image_encoder returns the VAE Encoder with pretrained weights."""
+    """Returns the VAE Encoder with pretrained weights.
+        The method first checks if the `_image_encoder` attribute is None. If it is, it creates a new
+        instance of the `ImageEncoder` class with the image height and width specified by the
+        `img_height` and `img_width` attributes. If the `jit_compile` attribute is True, the encoder
+        is compiled with JIT compilation enabled. The `_image_encoder` attribute is then set to the
+        newly created encoder instance. Finally, the `_image_encoder` attribute is returned.
+        If the `_image_encoder` attribute is not None, the existing encoder instance is returned.
+
+    Returns:
+    - ImageEncoder: The VAE Encoder with pretrained weights
+    """
         if self._image_encoder is None:
             self._image_encoder = ImageEncoder(self.img_height, self.img_width)
             if self.jit_compile:
@@ -470,9 +494,16 @@ class StableDiffusionBase:
 
     @property
     def decoder(self):
-        """Decoder returns the diffusion image decoder model with pretrained weights.
-        Can be overriden for tasks where the decoder needs to be modified.
-        """
+    """Returns the diffusion image decoder model with pretrained weights.
+
+    The decoder model is used to reconstruct images from the latent space generated
+    by the diffusion image model. By default, the method returns a pre-trained decoder
+    model that is suitable for a wide range of tasks. However, the method can be overridden
+    to modify the decoder for the Stable Diffusion or to use a different implementation.
+
+    Returns:
+    - An instance of the diffusion image decoder model with pretrained weights
+    """
         if self._decoder is None:
             self._decoder = Decoder(self.img_height, self.img_width)
             if self.jit_compile:
@@ -481,8 +512,16 @@ class StableDiffusionBase:
 
     @property
     def tokenizer(self):
-        """Tokenizer returns the tokenizer used for text inputs.
-        Can be overriden for tasks like textual inversion where the tokenizer needs to be modified.
+        """Returns the tokenizer used for text inputs.
+
+        The tokenizer is responsible for breaking down text inputs into smaller units,
+        such as words or subwords, that can be processed by machine learning models.
+        By default, the method returns a simple tokenizer that is suitable for a wide range
+        of tasks. However, the method can be overridden to modify the tokenizer for specific
+        tasks such as the Stable Diffusion or to use a different implementation.
+
+        Returns:
+        - An instance of the tokenizer used for text inputs.
         """
         if self._tokenizer is None:
             self._tokenizer = SimpleTokenizer()
@@ -538,8 +577,7 @@ class StableDiffusionBase:
         - seed (int, optional): The random seed to use for generating the noise tensor
 
         Returns:
-        - a tensor of shape (batch_size, img_height//8, img_width//8, 4) representing the initial noise tensor for the diffusion process
-
+        - A tensor of shape (batch_size, img_height//8, img_width//8, 4) representing the initial noise tensor for the diffusion process
         """
         if seed is not None:
             return tf.random.stateless_normal(
@@ -553,6 +591,14 @@ class StableDiffusionBase:
 
     @staticmethod
     def _get_pos_ids():
+        """Returns a tensor representing the position IDs of tokens in a prompt sequence.
+        The position IDs are used to indicate the position of each token in a sequence.
+        By default, the method returns a tensor representing the position IDs for a
+        prompt sequence of maximum length.
+
+        Returns:
+        - A tensor representing the position IDs of tokens in a prompt sequence
+        """
         return tf.convert_to_tensor(
             [list(range(MAX_PROMPT_LENGTH))], dtype=tf.int32
         )
@@ -590,6 +636,9 @@ class StableDiffusion(StableDiffusionBase):
         """text_encoder returns the text encoder with pretrained weights.
         Can be overriden for tasks like textual inversion where the text encoder
         needs to be modified.
+
+        Returns:
+        - An instance of the text encoder with pretrained weights
         """
         if self._text_encoder is None:
             self._text_encoder = TextEncoder(MAX_PROMPT_LENGTH)
@@ -601,6 +650,9 @@ class StableDiffusion(StableDiffusionBase):
     def diffusion_model(self):
         """diffusion_model returns the diffusion model with pretrained weights.
         Can be overriden for tasks where the diffusion model needs to be modified.
+
+        Returns:
+        - An instance of the diffusion model with pretrained weights
         """
         if self._diffusion_model is None:
             self._diffusion_model = DiffusionModel(
@@ -643,6 +695,9 @@ class StableDiffusionV2(StableDiffusionBase):
         """text_encoder returns the text encoder with pretrained weights.
         Can be overriden for tasks like textual inversion where the text encoder
         needs to be modified.
+        
+        Returns:
+        - An instance of the text encoder with pretrained weights
         """
         if self._text_encoder is None:
             self._text_encoder = TextEncoderV2(MAX_PROMPT_LENGTH)
@@ -654,6 +709,9 @@ class StableDiffusionV2(StableDiffusionBase):
     def diffusion_model(self):
         """diffusion_model returns the diffusion model with pretrained weights.
         Can be overriden for tasks where the diffusion model needs to be modified.
+        
+        Returns:
+        - An instance of the diffusion model with pretrained weights
         """
         if self._diffusion_model is None:
             self._diffusion_model = DiffusionModelV2(
