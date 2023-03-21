@@ -226,15 +226,21 @@ love_ds = assemble_dataset(
     prompts = [
         "a photo of a {} in love",
         "a photo of {}",
-        "a photo of one {}",
-        "a photo of a nice {}",
+        "a photo of an enamored {}",
+        "a photo of one {} in love",
+        "a photo of {} in love",
+        "a photo of a nice {} in love",
         "a good photo of a {}",
-        "a photo of the nice {}",
+        "a photo of the nice {} in love",
         "a photo of an amorous {}",
-        "a rendition of the {}",
+        "a rendition of the {} in love",
         "a nice sticker of a {}",
+        "a sticker of a {} who is in love",
+        "a sticker of a {} in love with somebody",
+        "a sticker of an enamored {}",
         "a sticker of a {}",
         "a sticker of a {} in love",
+        "a sticker of a lovestruck {}",
         "a sticker of an amorous {}",
         "a sticker of a lovely {}",
         "a sticker of a {} in a positive mood",
@@ -284,7 +290,7 @@ sad_ds = assemble_dataset(
     placeholder_token=placeholder_token
 )
 
-### create a dataset consisting of sad broccoli stickers and matching prompts
+### create a dataset consisting of angry broccoli stickers and matching prompts
 angry_ds = assemble_dataset(
     urls = [
         "https://i.imgur.com/mZswnIx.jpg",
