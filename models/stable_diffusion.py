@@ -482,7 +482,7 @@ class StableDiffusionBase:
 
     @property
     def text_encoder(self):
-       """Property that returns the text encoder used by the object.    
+        """Property that returns the text encoder used by the object.    
         """
         pass
 
@@ -494,15 +494,15 @@ class StableDiffusionBase:
 
     @property
     def decoder(self):
-    """Returns the diffusion image decoder model with pretrained weights.
-    The decoder model is used to reconstruct images from the latent space generated
-    by the diffusion image model. By default, the method returns a pre-trained decoder
-    model that is suitable for a wide range of tasks. Can be overridden
-    to modify the decoder for the Stable Diffusion or to use a different implementation.
+        """Returns the diffusion image decoder model with pretrained weights.
+        The decoder model is used to reconstruct images from the latent space generated
+        by the diffusion image model. By default, the method returns a pre-trained decoder
+        model that is suitable for a wide range of tasks. Can be overridden
+        to modify the decoder for the Stable Diffusion or to use a different implementation.
 
-    Returns:
-    - An instance of the diffusion image decoder model with pretrained weights
-    """
+        Returns:
+        - An instance of the diffusion image decoder model with pretrained weights
+        """
         if self._decoder is None:
             self._decoder = Decoder(self.img_height, self.img_width)
             if self.jit_compile:
@@ -540,7 +540,6 @@ class StableDiffusionBase:
         Returns:
         - tensor: the timestep embedding for the current time step
         """
-
         half = dim // 2
         freqs = tf.math.exp(
             -math.log(max_period) * tf.range(0, half, dtype=tf.float32) / half
@@ -616,7 +615,6 @@ class StableDiffusion(StableDiffusionBase):
             multiples of 128 are supported. Default: 512
     - jit_compile (bool): Whether to compile the underlying models to XLA. This can lead to a speedup on some systems. Default: False
     """
-
     def __init__(
         self,
         img_height=512,
@@ -675,7 +673,6 @@ class StableDiffusionV2(StableDiffusionBase):
             multiples of 128 are supported. Default: 512
     - jit_compile (bool): Whether to compile the underlying models to XLA. This can lead to a speedup on some systems. Default: False
     """
-
     def __init__(
         self,
         img_height=512,
