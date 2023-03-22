@@ -247,20 +247,20 @@ emoji_ds = assemble_dataset(
         "a photo of the nice {}",
         "a photo of a cool {}",
         "a rendition of the {}",
-        "a nice sticker of a {}",
-        "a sticker of a {}",
-        "a sticker of a happy {}",
-        "a sticker of a lucky {}",
-        "a sticker of a lovely {}",
-        "a sticker of a {} in a positive mood",
-        "a pixar chracter of a satisfied {}",
-        "a disney character of a positive {}",
-        "a sticker of a delighted {}",
-        "a sticker of a joyful {}",
-        "a sticker of a cheerful {}",
-        "a drawing of a glad {}",
-        "a sticker of a merry {}",
-        "a sticker of a pleased {}",
+        "a nice emoji of a {}",
+        "an emoji of a {}",
+        "an emoji of a happy {}",
+        "an emoji of a lucky {}",
+        "an emoji of a lovely {}",
+        "an emoji of a {} in a positive mood",
+        "an emoji chracter of a satisfied {}",
+        "an emoji character of a positive {}",
+        "an emoji of a delighted {}",
+        "an emoji of a joyful {}",
+        "an emoji of a cheerful {}",
+        "an emoji of a glad {}",
+        "an emoji of a merry {}",
+        "an emoji of a pleased {}",
     ],
     placeholder_token = placeholder_token_emoji
 )
@@ -595,8 +595,7 @@ trainer.compile(
 
 
 broccoli = []
-     
-#stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
+emoji = []
 
 placeholder_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_combined)[1]
 broccoli_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_broccoli)[1]
@@ -606,6 +605,7 @@ emoji_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_emoji)[1]
 broccoli_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(broccoli_tokenized))
 broccoli.append(broccoli_embeddings)
 emoji_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(emoji_tokenized))
+emoji.append(emoji_embeddings)
 
 ### define for later usage
 old_weights = []
