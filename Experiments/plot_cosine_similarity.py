@@ -3,7 +3,6 @@ import tensorflow as tf
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-mpl.use('ps')
 
 
 def cosine_sim(e1,e2):
