@@ -703,7 +703,7 @@ def image_generation(prompt, drive_folder, number, seed=None):
     for j in range(number):
 
         generated = stable_diffusion.text_to_image(
-        prompt, batch_size=1,  num_steps=25, seed = seed )
+        prompt, batch_size=1,  num_steps=25, seed=seed )
         broc = generated[0]
 
         ### convert the array generated from our stable diffusion model into a picture
