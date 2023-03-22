@@ -305,7 +305,7 @@ new_weights_emoji = np.expand_dims(new_weights_emoji, axis=0)
 ### concatenate the weights for the new embedding at the end of our weights (~)
 new_weights = np.concatenate([new_weights_broccoli, new_weights_emoji], axis=0)
 
-tokenized_combined = stable_diffusion.tokenizer.encode("broccolis sticker")[1]
+tokenized_combined = stable_diffusion.tokenizer.encode("broccoli sticker")[1]
 
 ### combine new weights
 new_weights_combined = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_combined))
@@ -648,8 +648,9 @@ def cosine_sim(e1,e2):
  
 ### get embeddings
 broccoli_embedding = get_embedding("broccoli")
+emoji_embedding = get_embedding("emoji")
 placeholder_embedding = get_embedding(placeholder_token_broccoli)
-emoji_embedding = get_embedding(placeholder_token_emoji)
+placeholder_emoji_embedding = get_embedding(placeholder_token_emoji)
 combined_embedding = get_embedding(placeholder_token_combined)
 ### Compute the cosine similarity between the two embeddings
 cosine_sim(broccoli_embedding, placeholder_embedding)
