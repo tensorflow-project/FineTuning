@@ -266,8 +266,7 @@ emoji_ds = assemble_dataset(
 )
 
 ### concatenate the different datasets
-"""train_ds = emoji_ds.concatenate(broccoli_ds)"""
-train_ds = broccoli_ds.concatenate(emoji_ds)
+train_ds = emoji_ds.concatenate(broccoli_ds)
 train_ds = train_ds.batch(1).shuffle(
     train_ds.cardinality(), reshuffle_each_iteration=True)
 
