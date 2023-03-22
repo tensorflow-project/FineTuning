@@ -679,7 +679,7 @@ def cosine_plot(epoch_num, cosine_similarity):
     plt.title("Cosine Similarity between the basis and the new concept")
     plt.show()
 
-def image_generation(prompt, drive_folder, number):
+def image_generation(prompt, drive_folder, number, seed=None):
     """Generates an image using stable diffusion model by passing a string with a placeholder token. 
     The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
 
@@ -687,6 +687,7 @@ def image_generation(prompt, drive_folder, number):
     - prompt (str): The prompt used for generating the image
     - drive_folder (str): The path to the Google Drive folder where the image will be saved
     - number (int): How many images are to be generated
+    - seed (int): The seed for image generation. Defaults to None
 
     Returns:
     - None
@@ -702,7 +703,7 @@ def image_generation(prompt, drive_folder, number):
     for j in range(number):
 
         generated = stable_diffusion.text_to_image(
-        prompt, batch_size=1,  num_steps=25 )
+        prompt, batch_size=1,  num_steps=25, seed = seed )
         broc = generated[0]
 
         ### convert the array generated from our stable diffusion model into a picture
