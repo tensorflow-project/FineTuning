@@ -1,7 +1,6 @@
-# Fine-Tuning
-using textual inversion to fine tune a stable diffusion model in order to combine two rather opposed concepts like broccoli and emotions in a certain style
+# Fine-Tuning (Tensorflow)
+Using textual inversion to fine tune keras' Stable Diffusion model in order to combine two rather opposed concepts like broccoli and emotions in a certain style in Tensorflow. Training and testing a pretrained ResNet to classify the emotion depicted in the generated images. 
 
-    Project Description: Start by giving a brief introduction to the project, including its purpose, goals, and the problem it solves.
 
     Installation: Provide instructions on how to install and run the project. This may include any prerequisites needed, such as specific software or libraries.
 
