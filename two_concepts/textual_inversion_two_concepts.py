@@ -646,27 +646,6 @@ def cosine_sim(e1,e2):
     sim = dot(e1, e2)/(norm(e1)*norm(e2))
     return sim
  
-### get embeddings
-broccoli_embedding = get_embedding("broccoli")
-emoji_embedding = get_embedding("emoji")
-placeholder_embedding = get_embedding(placeholder_token_broccoli)
-placeholder_emoji_embedding = get_embedding(placeholder_token_emoji)
-combined_embedding = get_embedding(placeholder_token_combined)
-### Compute the cosine similarity between the two embeddings
-cosine_sim(broccoli_embedding, placeholder_embedding)
-cosine_sim(placeholder_embedding, combined_embedding)
-cosine_sim(emoji_embedding, combined_embedding)
-                                                                     
-old_broccoli = broccoli_embedding
-old_combined = combined_embedding
-old_placeholder = placeholder_embedding
-old_emoji = emoji_embedding
-                                                                
-
-cosine_sim(old_broccoli, broccoli_embedding)
-cosine_sim(old_combined, combined_embedding)
-cosine_sim(old_placeholder, placeholder_embedding)
-cosine_sim(old_emoji, emoji_embedding)
      
 def image_generation(prompt, drive_folder, number, seed=None):
     """Generates an image using stable diffusion model by passing a string with a placeholder token. 
