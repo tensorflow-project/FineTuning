@@ -10,13 +10,23 @@ For training, you can either continue with weigths saved in a numpy array or sta
 For the former, mount your Google Drive and insert the name of your own numpy array stored in your Google Drive where indicated in the coments.
 Afterwards, choose how many epochs you want to train for, whther to train with seeing the development of the image after each epoch or not, and where to save your new weights. 
 
-For image generation, choose where to loas weights from. Either execute the code as ist is and load our pretrained weights, or insert your own path. Afterwards, you can choose a prompt, the number of images to be generated and a fixed seed if wanted. Execute the cell for storing the images in your Google Drive or the one for showing the images in the notebook. You may have to save a folder "Images" in you Google Drive before doing so.
-When generating images with two concepts, choose whether to generate images by concept interpolation or by combining concepts in the prompt.
+For image generation, choose where to loas weights from. Either execute the code as ist is and load our pretrained weights, or insert your own path. 
+![grafik](https://user-images.githubusercontent.com/126180162/227211476-18cbd088-8e15-4857-9a11-94b715a891eb.png)
+Afterwards, you can choose a prompt, the number of images to be generated and a fixed seed if wanted. 
+![grafik](https://user-images.githubusercontent.com/126180162/227211216-62c90d49-9c95-4fad-adae-f85cbee5f2dd.png)
+
+Execute the cell for storing the images in your Google Drive or the one for showing the images in the notebook. You may have to save a folder "Images" in you Google Drive before doing so.
+![grafik](https://user-images.githubusercontent.com/126180162/227211627-7f07917b-b036-4314-9210-491888e6907f.png)
+
+When generating images with two concepts, choose the percentage of emoji the images should contain and whether to generate images by concept interpolation:
+![grafik](https://user-images.githubusercontent.com/126180162/227212231-b418f3f2-cd04-449b-bd16-39344827c06e.png)
+or by combining concepts in the prompt:
+![grafik](https://user-images.githubusercontent.com/126180162/227212329-d003c75d-a572-4347-82db-b328de7ecf4c.png)
+
 
 The file "ResNet.ipynb" contains the pretrained, customized ResNet50 used by us including image preprocessing. The images used are stored in the folder "dataset" and contain only images that contain enough features of broccoli and the respective emotion.
 
     License: Specify the license under which your project is released. This is important because it tells others how they can use your code.
 
-    Contact Information: Provide a way for users to contact you if they have questions or need support.
 
     Acknowledgments: If you used any third-party libraries or tools in your project, give credit to the authors and provide links to their websites.
