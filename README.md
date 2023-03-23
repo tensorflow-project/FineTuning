@@ -15,12 +15,6 @@ When generating images with two concepts, choose whether to generate images by c
 
 The file "ResNet.ipynb" contains the pretrained, customized ResNet50 used by us including image preprocessing. The images used are stored in the folder "dataset" and contain only images that contain enough features of broccoli and the respective emotion.
 
-
-
-Explain how to use the project, including any command line options or configurations that are available.
-
-    Contributing: If you want other developers to contribute to your project, provide guidelines on how to do so. This may include information on how to set up a development environment and the process for submitting pull requests.
-
     License: Specify the license under which your project is released. This is important because it tells others how they can use your code.
 
     Contact Information: Provide a way for users to contact you if they have questions or need support.
