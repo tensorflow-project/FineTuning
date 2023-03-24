@@ -599,11 +599,13 @@ placeholder_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_comb
 broccoli_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_broccoli)[1]
 emoji_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_emoji)[1]
 
+#broccoli = []
+#emoji = []
 
 broccoli_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(broccoli_tokenized))
-broccoli.append(broccoli_embeddings)
+#broccoli.append(broccoli_embeddings)
 emoji_embeddings = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(emoji_tokenized))
-emoji.append(emoji_embeddings)
+#emoji.append(emoji_embeddings)
 
 ### define for later usage
 old_weights = []
