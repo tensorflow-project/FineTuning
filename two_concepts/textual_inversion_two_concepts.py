@@ -595,10 +595,6 @@ trainer.compile(
     loss=keras.losses.MeanSquaredError(reduction="none"),
 )  
 
-
-broccoli = []
-emoji = []
-
 placeholder_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_combined)[1]
 broccoli_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_broccoli)[1]
 emoji_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_emoji)[1]
@@ -611,9 +607,8 @@ emoji.append(emoji_embeddings)
 
 ### define for later usage
 old_weights = []
-percent = 0.5
 
-def percentage_emoji(percent):
+def percentage_emoji(percent = 0.5):
     """Replaces a portion of the token embeddings in a StableDiffusion model's text encoder with emoji embeddings.
 
     The function takes a percentage value `percent` between 0 and 1 and computes a weighted sum of the original token
