@@ -34,13 +34,13 @@ class ResNet(tf.keras.Model):
                          Dense(256, activation='relu'),
                          BatchNormalization(),
                          Dropout(self.dropout_rate),
-                         Dense(10, activation='softmax')
+                         Dense(4, activation='softmax')
                          ]
         self.custom_layers = [
             Flatten(),
             Dense(512, activation='relu'),
             Dense(256, activation='relu'),
-            Dense(10, activation='softmax')
+            Dense(4, activation='softmax')
         ]
     def call(self, x, trainable=False):
         x = self.res(x)
