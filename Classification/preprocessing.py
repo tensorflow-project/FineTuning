@@ -7,8 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1jxZz8skQdsgeTB5gM72nuxYgwx7V2BkB
 """
 
-!git clone https://github.com/tensorflow-project/FineTuning
-
 import tensorflow as tf
 import numpy as np
 import datetime
@@ -22,18 +20,6 @@ from keras.layers import Dense, Flatten, BatchNormalization, Dropout
 from keras.optimizers import Adam
 import random
 
-# Commented out IPython magic to ensure Python compatibility.
-### get image folders
-# %cd /content/FineTuning/dataset
-!wget <https://github.com/tensorflow-project/FineTuning/blob/main/dataset/happyZip.zip>
-!wget <https://github.com/tensorflow-project/FineTuning/blob/main/dataset/loveZip.zip>
-!wget <https://github.com/tensorflow-project/FineTuning/blob/main/dataset/angryZip.zip>
-!wget <https://github.com/tensorflow-project/FineTuning/blob/main/dataset/sadZip.zip>
-
-!unzip /content/FineTuning/dataset/happyZip.zip -d /content/FineTuning/dataset/happyZip
-!unzip /content/FineTuning/dataset/angryZip.zip -d /content/FineTuning/dataset/angryZip
-!unzip /content/FineTuning/dataset/sadZip.zip -d /content/FineTuning/dataset/sadZip
-!unzip /content/FineTuning/dataset/loveZip.zip -d /content/FineTuning/dataset/loveZip
 
 def image_preprocessing(path, images, augment=False):
     """Preprocesses a set of images located in the specified directory.
@@ -59,7 +45,8 @@ def image_preprocessing(path, images, augment=False):
             img = tf.image.random_brightness(img, max_delta=0.2)
             img = tf.image.random_contrast(img, lower=0.5, upper=1.5)
         images.append(np.array(img))
-
+        
+@tf.autograph.experimental.do_not_convert
 def dataset(path, label, augment=False):
   """Creates a TensorFlow dataset from a set of images located in the specified directory.
 
