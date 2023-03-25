@@ -103,7 +103,7 @@ class ResNet(tf.keras.Model):
             for data in test_ds:
                 metrics = self.test_step(data)
 
-            with val_summary_writer.as_default():
+            with test_summary_writer.as_default():
                 # for scalar metrics:
                 for metric in self.metrics_list:
                     tf.summary.scalar(f"{metric.name}", metric.result(), step=e)
