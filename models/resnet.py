@@ -87,6 +87,7 @@ class ResNet(tf.keras.Model):
     
     def training_loop(self, train_ds, test_ds, epochs, train_summary_writer, test_summary_writer):
         for e in range(epochs):
+            print(f"Epoch {n}:")
             #training
             for data in tqdm.tqdm(train_ds, position = 0, leave = True):
                 metrics = self.train_step(data)
