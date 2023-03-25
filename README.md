@@ -29,7 +29,7 @@ When generating images with two concepts, choose the percentage of emoji the ima
 or by combining concepts in the prompt:
 ![grafik](https://user-images.githubusercontent.com/126180162/227212329-d003c75d-a572-4347-82db-b328de7ecf4c.png)
 
-The file "ResNet.ipynb" contains the pre-trained, customized ResNet50 used by us including image preprocessing. The images used are stored in the folder "dataset" and contain only images that contain enough features of broccoli and the respective emotion.
+The file "classification/Classifying.ipynb" contains the pre-trained, customized ResNet50 used by us including image preprocessing. The images used are stored in the folder "dataset" and contain only images that contain enough features of broccoli and the respective emotion.
 
 # Limitations:
 With the weights provided by us, only about one in five generated images will be recognizable as broccoli with the respective emotion. This might improve with further training, which we do not have the resources for. Defending on epochs trained, learning rate and method used (four emotions or two concepts), the results differ strongly.\
