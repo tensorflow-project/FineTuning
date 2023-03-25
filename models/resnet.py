@@ -23,10 +23,15 @@ class ResNet(tf.keras.Model):
             layer.trainable = False
 
         self.optimizer = Adam(learning_rate=0.0001)
+        self.loss_function = tf.keras.losses.CategoricalCrossentropy()
+        self.metrics_list = [
+            tf.keras.metrics.Mean(name='loss'),
+            tf.keras.metrics.CategoricalAccuracy(name='accuracy')
+            ]
         
         self.dropout_rate = dropout_rate
 
-        """self.training_custom_layers = [
+        self.custom_layers = [
                          Flatten(),
                          Dense(512, activation='relu'),
                          BatchNormalization(),
@@ -35,29 +40,74 @@ class ResNet(tf.keras.Model):
                          BatchNormalization(),
                          Dropout(self.dropout_rate),
                          Dense(4, activation='softmax')
-                         ]"""
-        self.flatten = Flatten()
-        self.dense1 = Dense(512, activation='relu')
-        self.batch1 = BatchNormalization()
-        self.drop1 = Dropout(self.dropout_rate)
-        self.dense2 = Dense(256, activation='relu')
-        self.batch2 = BatchNormalization()
-        self.drop2 = Dropout(self.dropout_rate)
-        self.out = Dense(4, activation='softmax')
+                         ]
         
-    def call(self, x, trainable=False):
-        x = self.res(x)
-        x = self.flatten(x)
-        x = self.dense1(x)
-        x = self.batch1(x, trainable=trainable)
-        x = self.drop1(x, trainable=trainable)
-        x = self.dense2(x)
-        x = self.batch2(x, trainable=trainable)
-        x = self.drop2(x, trainable=trainable)
-        x = self.out(x)
-        """if trainable:
-            for layer in self.training_custom_layers:
-                x = layer(x)
-        else:
-            for layer in self.training_custom_layers:"""
+    def call(self, x, training=False):
+        
+        for layer in self.custom_layers:
+            if isinstance(layer, (BatchNormalization, Dropout)):
+                x = layer(x, trainable=training)
+            else:
+                x = layer(x)             
         return x
+    
+    def reset_metrics(self):
+        """Function to reset every metric. Necessary for train_loop"""
+        for metric in self.metrics_list:
+            metric.reset_states()
+
+    @tf.function
+    def train(self, input):
+        """Training step for ResNet"""
+        x,t = input
+
+        with tf.GradientTape() as tape:
+            output = self(x, training=True)
+            loss = self.loss_function(t, output) + tf.reduce_sum(self.losses)
+        gradients = tape.gradient(loss, self.trainable_variables)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+
+        self.metrics_list[0].update_state(values=loss)
+        self.metrics_list[1].update_state(t, output)
+        
+        return {m.name:m.result() for m in self.metrics_list}
+    
+    @tf.function
+    def test(self, input):
+        """Testing step for ResNet"""
+        x,t = input
+        output = self(x, training=False)
+        loss = self.loss_function(t, output) + tf.reduce_sum(self.losses)
+
+        self.metrics_list[0].update_state(values=loss)
+        self.metrics_list[1].update_state(t, output)
+        
+        return {m.name:m.result() for m in self.metrics_list}
+    
+    def training_loop(self, train_ds, test_ds, epochs, train_summary_writer, test_summary_writer):
+        for e in range(epochs):
+            #training
+            for data in tqdm.tqdm(train_ds, position = 0, leave = True):
+                metrics = model.train_step(data)
+                #for scalar metrics: save logs
+            with train_summary_writer.as_default(): 
+                for metric in model.metrics:
+                    tf.summary.scalar(f"{metric.name}", metric.result(), step=e)
+
+            print([f"{key}: {value.numpy()}" for (key, value) in metrics.items()])
+
+            model.reset_metrics()
+
+            #testing
+            for data in test_ds:
+                metrics = model.test_step(data)
+
+            with val_summary_writer.as_default():
+                # for scalar metrics:
+                for metric in model.metrics:
+                    tf.summary.scalar(f"{metric.name}", metric.result(), step=e)
+
+            print([f"val_{key}: {value.numpy()}" for (key, value) in metrics.items()])
+
+            # reset metric objects
+            model.reset_metrics()
