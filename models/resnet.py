@@ -26,7 +26,7 @@ class ResNet(tf.keras.Model):
         
         self.dropout_rate = dropout_rate
 
-        self.training_custom_layers = [
+        """self.training_custom_layers = [
                          Flatten(),
                          Dense(512, activation='relu'),
                          BatchNormalization(),
@@ -35,19 +35,29 @@ class ResNet(tf.keras.Model):
                          BatchNormalization(),
                          Dropout(self.dropout_rate),
                          Dense(4, activation='softmax')
-                         ]
-        self.custom_layers = [
-            Flatten(),
-            Dense(512, activation='relu'),
-            Dense(256, activation='relu'),
-            Dense(4, activation='softmax')
-        ]
+                         ]"""
+        self.flatten = Flatten()
+        self.dense1 = Dense(512, activation='relu')
+        self.batch1 = BatchNormalization()
+        self.drop1 = Dropout(self.dropout_rate)
+        self.dense2 = Dense(256, activation='relu')
+        self.batch2 = BatchNormalization()
+        self.drop2 = Dropout(self.dropout_rate)
+        self.out = Dense(4, activation='softmax')
+        
     def call(self, x, trainable=False):
         x = self.res(x)
-        if trainable:
+        x = self.flatten(x)
+        x = self.dense1(x)
+        x = self.batch1(x, trainable=trainable)
+        x = self.drop1(x, trainable=trainable)
+        x = self.dense2(x)
+        x = self.batch2(x, trainable=trainable)
+        x = self.drop2(x, trainable=trainable)
+        x = self.out(x)
+        """if trainable:
             for layer in self.training_custom_layers:
                 x = layer(x)
         else:
-            for layer in self.custom_layers:
-                x = layer(x)
+            for layer in self.training_custom_layers:"""
         return x
