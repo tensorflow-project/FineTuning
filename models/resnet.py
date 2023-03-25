@@ -47,7 +47,7 @@ class ResNet(tf.keras.Model):
         
         for layer in self.custom_layers:
             if isinstance(layer, (BatchNormalization, Dropout)):
-                x = layer(x, trainable=training)
+                x = layer(x, training=training)
             else:
                 x = layer(x)             
         return x
