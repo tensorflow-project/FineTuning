@@ -97,4 +97,3 @@ def create_summary_writers(config_name):
     
     return train_summary_writer, val_summary_writer
 
-train_summary_writer, val_summary_writer = create_summary_writers(config_name="RUN1")
