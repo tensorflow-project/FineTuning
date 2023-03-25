@@ -58,7 +58,7 @@ class ResNet(tf.keras.Model):
             metric.reset_states()
 
     @tf.function
-    def train(self, input):
+    def train_step(self, input):
         """Training step for ResNet"""
         x,t = input
 
@@ -74,7 +74,7 @@ class ResNet(tf.keras.Model):
         return {m.name:m.result() for m in self.metrics_list}
     
     @tf.function
-    def test(self, input):
+    def test_step(self, input):
         """Testing step for ResNet"""
         x,t = input
         output = self(x, training=False)
