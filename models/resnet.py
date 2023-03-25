@@ -88,26 +88,26 @@ class ResNet(tf.keras.Model):
         for e in range(epochs):
             #training
             for data in tqdm.tqdm(train_ds, position = 0, leave = True):
-                metrics = model.train_step(data)
+                metrics = self.train_step(data)
                 #for scalar metrics: save logs
             with train_summary_writer.as_default(): 
-                for metric in model.metrics:
+                for metric in self.metrics:
                     tf.summary.scalar(f"{metric.name}", metric.result(), step=e)
 
             print([f"{key}: {value.numpy()}" for (key, value) in metrics.items()])
 
-            model.reset_metrics()
+            self.reset_metrics()
 
             #testing
             for data in test_ds:
-                metrics = model.test_step(data)
+                metrics = self.test_step(data)
 
             with val_summary_writer.as_default():
                 # for scalar metrics:
-                for metric in model.metrics:
+                for metric in self.metrics:
                     tf.summary.scalar(f"{metric.name}", metric.result(), step=e)
 
             print([f"val_{key}: {value.numpy()}" for (key, value) in metrics.items()])
 
             # reset metric objects
-            model.reset_metrics()
+            self.reset_metrics()
