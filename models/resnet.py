@@ -12,6 +12,7 @@ import numpy as np
 from keras.models import Model
 from keras.layers import Dense, Flatten, BatchNormalization, Dropout
 from keras.optimizers import Adam
+import tqdm
 
 class ResNet(tf.keras.Model):
     def __init__(self, dropout_rate=0.2):
