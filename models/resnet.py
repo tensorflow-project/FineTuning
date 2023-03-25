@@ -92,7 +92,7 @@ class ResNet(tf.keras.Model):
                 metrics = self.train_step(data)
                 #for scalar metrics: save logs
             with train_summary_writer.as_default(): 
-                for metric in self.metrics:
+                for metric in self.metrics_list:
                     tf.summary.scalar(f"{metric.name}", metric.result(), step=e)
 
             print([f"{key}: {value.numpy()}" for (key, value) in metrics.items()])
@@ -105,7 +105,7 @@ class ResNet(tf.keras.Model):
 
             with val_summary_writer.as_default():
                 # for scalar metrics:
-                for metric in self.metrics:
+                for metric in self.metrics_list:
                     tf.summary.scalar(f"{metric.name}", metric.result(), step=e)
 
             print([f"val_{key}: {value.numpy()}" for (key, value) in metrics.items()])
