@@ -15,6 +15,18 @@ from keras.optimizers import Adam
 import tqdm
 
 class ResNet(tf.keras.Model):
+    """A CNN with residual connections
+    Args:
+    - dropout_rate (float): the rate of dropout layers, default is 0.2
+    
+    Attributes:
+    - res (tf.keras.Model): The ResNet50 model from Keras with pre-trained weights.
+    - optimizer (tf.keras.optimizers.Optimizer): The Adam optimizer with learning rate 0.0001.
+    - loss_function (tf.keras.losses.Loss): The categorical cross-entropy loss function.
+    - metrics_list (list): A list of metrics to evaluate during training.
+    - dropout_rate (float): The rate of dropout layers.
+    - custom_layers (list): A list of custom layers to be added to the ResNet model.
+    """
     def __init__(self, dropout_rate=0.2):
         super().__init__()
 
@@ -53,7 +65,7 @@ class ResNet(tf.keras.Model):
         return x
     
     def reset_metrics(self):
-        """Function to reset every metric. Necessary for train_loop"""
+        """Function to reset every metric to 0"""
         for metric in self.metrics_list:
             metric.reset_states()
 
@@ -86,6 +98,9 @@ class ResNet(tf.keras.Model):
         return {m.name:m.result() for m in self.metrics_list}
     
     def training_loop(self, train_ds, test_ds, epochs, train_summary_writer, test_summary_writer):
+        """Performs a training loop for a specified number of epochs on input data
+            and writes summaries to TensorBoard using train_summary_writer and test_summary_writer.
+        """
         for e in range(epochs):
             print(f"Epoch {e}:")
             #training
