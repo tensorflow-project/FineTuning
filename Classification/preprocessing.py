@@ -73,27 +73,3 @@ def dataset(path, label, augment=False):
   dataset = dataset.cache()
 
   return dataset
-
-def create_summary_writers(config_name):
-    """Creates TensorFlow summary writers for logging training and validation metrics.
-
-    Args:
-    - config_name (str): Name of the configuration used for the current run
-
-    Returns:
-    - A tuple containing the summary writers for training and validation metrics
-    """
-    #define where to save logs
-    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-
-    train_log_path = f"logs/{config_name}/{current_time}/train"
-    val_log_path = f"logs/{config_name}/{current_time}/val"
-
-    # log writer for training metrics
-    train_summary_writer = tf.summary.create_file_writer(train_log_path)
-
-    # log writer for validation metrics
-    val_summary_writer = tf.summary.create_file_writer(val_log_path)
-    
-    return train_summary_writer, val_summary_writer
-
