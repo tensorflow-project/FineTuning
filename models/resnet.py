@@ -32,6 +32,7 @@ class ResNet(tf.keras.Model):
 
         self.res = tf.keras.applications.ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
+        ### turn the trainable argument of all layers except from the last 10 to false
         for layer in self.res.layers[:-10]:
             layer.trainable = False
 
@@ -44,6 +45,7 @@ class ResNet(tf.keras.Model):
         
         self.dropout_rate = dropout_rate
 
+        ### some custom layers are added to the pretrained resnet to achieve better performance
         self.custom_layers = [
                          Flatten(),
                          Dense(512, activation='relu'),
