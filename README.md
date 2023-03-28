@@ -29,7 +29,7 @@ When generating images with two concepts, choose the percentage of emoji the ima
 or by combining concepts in the prompt:
 ![grafik](https://user-images.githubusercontent.com/126180162/227212329-d003c75d-a572-4347-82db-b328de7ecf4c.png)
 
-The file "classification/Classifying.ipynb" contains the pre-trained, customized ResNet50 used by us including image preprocessing. The images used are stored in the folder "dataset" and contain only images that contain enough features of broccoli and the respective emotion.
+The file "classification/Classifying.ipynb" contains the the notebook for the pre-trained, customized ResNet-50 used by us including image preprocessing. The images used are stored in the folder "dataset" and contain only images that contain enough features of broccoli and the respective emotion.
 
 # Limitations:
 With the weights provided by us, only about one in five generated images will be recognizable as broccoli with the respective emotion. This might improve with further training, which we do not have the resources for. Defending on epochs trained, learning rate and method used (four emotions or two concepts), the results differ strongly.\
@@ -37,13 +37,13 @@ The accuracy of the ResNet is improving with training, but validation accuracy h
 
 
 # License: 
-We use pre-trained models and the pre-trained ResNet50 model from Keras which are licensed under the Apache License, Version 2.0. You may obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0 (Copyright 2022 The KerasCV Authors).
+We use pre-trained models and the pre-trained ResNet-50 model from Keras which are licensed under the Apache License, Version 2.0. You may obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0 (Copyright 2022 The KerasCV Authors).
 
 
 # Acknowledgments:
 We use the  keras-cv Stable diffusion model.\
 Link to keras-cv Github: [https://github.com/tensorflow-project/keras-cv](https://github.com/keras-team/keras-cv/tree/master/keras_cv/models/stable_diffusion) .
 
-Furthermore, we customize the keras-cv ResNet50.\
+Furthermore, we customize the keras-cv ResNet-50.\
 Link to keras-cv Github: https://github.com/keras-team/keras-applications/blob/master/keras_applications/resnet50.py .
 
