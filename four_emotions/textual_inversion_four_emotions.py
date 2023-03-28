@@ -635,7 +635,7 @@ def get_embedding(token):
 
     return embedding
 
-def training(epoch, model, data, sticker_embedding, number_steps = 30, cosine_similarity):
+def training(epoch, model, data, sticker_embedding, cosine_similarity, number_steps = 30):
     """Trains the Stable Diffusion model using the given dataset for the specified number of epochs.
     For each batch in the dataset, a textual inversion is computed using the trained model.
     After each epoch, the embedding of the placeholder token is retrieved and its cosine similarity with the broccoli
