@@ -635,7 +635,7 @@ def get_embedding(token):
 
     return embedding
 
-def training(epoch, model, data, sticker_embedding, cosine_similarity, number_steps = 30):
+def training(epoch, model, data, sticker_embedding, cosine_similarity):
     """Trains the Stable Diffusion model using the given dataset for the specified number of epochs.
     For each batch in the dataset, a textual inversion is computed using the trained model.
     After each epoch, the embedding of the placeholder token is retrieved and its cosine similarity with the broccoli
@@ -646,7 +646,6 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, number_st
     - model (keras.Model): The Stable Diffusion model to be trained
     - data (tf.data.Dataset): The dataset to use for training
     - sticker_embedding (list): A list to store embeddings of the placeholder token after each epoch
-    - number_steps (int): number of timesteps for generating image
     - cosine_similarity (list): A list to store cosine similarities between the embeddings of the placeholder token and
       the broccoli emoji embedding after each epoch
 
@@ -657,7 +656,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, number_st
     ### Wrap the dataset iterator with tqdm to show progress
         for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
             # Compute the forward pass of the model
-            loss = textual_inversion(model=stable_diffusion, num_steps= number_steps, noise_scheduler=noise_scheduler, data=batch)
+            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
 
         ### Compute the embedding of the placeholder token and the cosine similarity
         ### with the broccoli emoji embedding
@@ -686,7 +685,7 @@ def cosine_plot(epoch_num, cosine_similarity):
     plt.title("Cosine Similarity between the basis and the new concept")
     plt.show()
 
-def image_generation(prompt, drive_folder, number, seed=None):
+def image_generation(prompt, drive_folder, number, seed=None, number_steps = 30):
     """Generates an image using stable diffusion model by passing a string with a placeholder token. 
     The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
 
@@ -695,6 +694,7 @@ def image_generation(prompt, drive_folder, number, seed=None):
     - drive_folder (str): The path to the Google Drive folder where the image will be saved
     - number (int): How many images are to be generated
     - seed (int): The seed for image generation. Defaults to None
+    - number_steps (int): number of timesteps for generating image
 
     Returns:
     - None
@@ -710,7 +710,7 @@ def image_generation(prompt, drive_folder, number, seed=None):
     for j in range(number):
 
         generated = stable_diffusion.text_to_image(
-        prompt, batch_size=1,  num_steps=25, seed=seed )
+        prompt, batch_size=1, num_steps=number_steps, seed=seed)
         broc = generated[0]
 
         ### convert the array generated from our stable diffusion model into a picture
