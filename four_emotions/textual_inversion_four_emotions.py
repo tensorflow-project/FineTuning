@@ -635,7 +635,7 @@ def get_embedding(token):
 
     return embedding
 
-def training(epoch, model, data, sticker_embedding, cosine_similarity):
+def training(epoch, model, data, sticker_embedding, number_steps = 30, cosine_similarity):
     """Trains the Stable Diffusion model using the given dataset for the specified number of epochs.
     For each batch in the dataset, a textual inversion is computed using the trained model.
     After each epoch, the embedding of the placeholder token is retrieved and its cosine similarity with the broccoli
@@ -646,6 +646,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity):
     - model (keras.Model): The Stable Diffusion model to be trained
     - data (tf.data.Dataset): The dataset to use for training
     - sticker_embedding (list): A list to store embeddings of the placeholder token after each epoch
+    - number_steps (int): number of timesteps for generating image
     - cosine_similarity (list): A list to store cosine similarities between the embeddings of the placeholder token and
       the broccoli emoji embedding after each epoch
 
@@ -656,7 +657,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity):
     ### Wrap the dataset iterator with tqdm to show progress
         for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
             # Compute the forward pass of the model
-            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
+            loss = textual_inversion(model=stable_diffusion, num_steps= number_steps, noise_scheduler=noise_scheduler, data=batch)
 
         ### Compute the embedding of the placeholder token and the cosine similarity
         ### with the broccoli emoji embedding
