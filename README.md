@@ -33,7 +33,7 @@ The file "classification/Classifying.ipynb" contains the the notebook for the pr
 
 # Limitations:
 With the weights provided by us, only about one in five generated images will be recognizable as broccoli with the respective emotion. This might improve with further training, which we do not have the resources for. Defending on epochs trained, learning rate and method used (four emotions or two concepts), the results differ strongly.\
-The accuracy of the ResNet is improving with training, but validation accuracy hardly surpasses 50 %, meaning the outcome is better that pure chance, but there is still room for improvement.
+The accuracy of the ResNet is improving with training, but validation accuracy hardly surpasses 30%, meaning the outcome is better that pure chance, but there is still room for improvement.
 
 
 # License: 
