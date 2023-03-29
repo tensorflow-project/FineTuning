@@ -179,7 +179,7 @@ def assemble_dataset(urls, prompts, placeholder_token, stable_diffusion):
     text_dataset = text_dataset.repeat(5)
     return tf.data.Dataset.zip((image_dataset, text_dataset))
 
-def create_dataset(stable_diffusion):
+def create_dataset(stable_diffusion, placeholder_token):
     ### create a dataset consisting of happy broccoli stickers and happy prompts
     happy_ds = assemble_dataset(
         urls = [
