@@ -567,7 +567,7 @@ def image_generation(prompt, drive_folder, number, seed=None):
             f.write(str(i))
             
             
-def adding_token(stable_diffusion):
+def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
 
     ### Add our placeholder_tokens to our stable_diffusion Model
     stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
