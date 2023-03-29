@@ -386,13 +386,10 @@ class StableDiffusionFineTuner(keras.Model):
         self.optimizer.apply_gradients(zip(grads, trainable_weights))
         return {"loss": loss}
      
-def textual_preprocessing(stable_diffusion):
+def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
     """Preprocesses the different needed models in order to apply textual inversion on it
     """
-    ### our new concept which is later inserted in the different prompts (for training and image generation)
-    placeholder_token_broccoli = "<my-broccoli-token>"
-    placeholder_token_emoji = "<my-emoji-token>"
-    placeholder_token_combined = "<my-broccoli-emoji-token>"
+  
     ### Add our placeholder_tokens to our stable_diffusion Model
     stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
     stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
