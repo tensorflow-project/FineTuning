@@ -440,8 +440,8 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
 
     # Have to set download_weights False so we can initialize the weights ourselves
     ### create a new text encoder 
-    new_encoder = txt.TextEncoder(
-        txt.MAX_PROMPT_LENGTH,
+    new_encoder = TextEncoder(
+        MAX_PROMPT_LENGTH,
         vocab_size = new_vocab_size,
         download_weights = False,
     )
