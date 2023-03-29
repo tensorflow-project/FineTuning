@@ -575,14 +575,12 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_di
         generated = model.text_to_image(f"a happy {placeholder_token}.", batch_size=3, num_steps=30, seed=2704)
         plot_images(generated)
 
-def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
+def textual_preprocessing(stable_diffusion, placeholder_token):
     """Preprocesses the different needed models in order to apply textual inversion on it
     """
   
-    ### Add our placeholder_tokens to our stable_diffusion Model
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
+    ### Add our placeholder_token to our stable_diffusion Model
+    stable_diffusion.tokenizer.add_tokens(placeholder_token)
 
     ### defining concept we want to build our new concept on
     tokenized_initializer = stable_diffusion.tokenizer.encode("broccoli")[1]
@@ -601,28 +599,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
     ### old_token_weights has now the shape (vocab_size, embedding_dim)
     ### expand the dimension to be able to concatenate it with old_token_weights
     new_weights_broccoli = np.expand_dims(new_weights_broccoli, axis=0)
-    new_weights_broccoli = np.concatenate([old_token_weights, new_weights_broccoli], axis=0)
-
-
-    ### same for emoji token
-    ### defining concept we want to build our new concept on 
-    tokenized_initializer_emoji = stable_diffusion.tokenizer.encode("emoji")[1]
-
-    new_weights_emoji = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer_emoji))
-    new_weights_emoji = np.expand_dims(new_weights_emoji, axis=0)
-
-    ### concatenate the weights for the new embedding at the end of our weights (~)
-    new_weights = np.concatenate([new_weights_broccoli, new_weights_emoji], axis=0)
-
-    tokenized_combined = stable_diffusion.tokenizer.encode("broccoli sticker")[1]
-
-    ### combine new weights
-    new_weights_combined = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_combined))
-    new_weights_combined = np.expand_dims(new_weights_combined, axis=0)
-    new_weights = np.concatenate([new_weights, new_weights_combined], axis=0)
-
-    test_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
-    test_weights = test_weights[0]
+    new_weights = np.concatenate([old_token_weights, new_weights_broccoli], axis=0)
     
     # Get len of .vocab instead of tokenizer
     new_vocab_size = len(stable_diffusion.tokenizer.vocab)
