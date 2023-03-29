@@ -480,7 +480,7 @@ class StableDiffusionFineTuner(keras.Model):
                 text embeddings
 
         Returns:
-        - A dictionary containing the current loss value.
+        - A dictionary containing the current loss value
         """
         images, embeddings = data
 
