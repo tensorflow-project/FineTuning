@@ -163,7 +163,7 @@ def assemble_dataset(urls, prompts, placeholder_token, stable_diffusion):
     """
     ### creating the image and test dataset
     image_dataset = assemble_image_dataset(urls)
-    text_dataset = assemble_text_dataset(prompts, placeholder_token)
+    text_dataset = assemble_text_dataset(prompts, placeholder_token, stable_diffusion)
     
     ### repeat both datasets to get several different combinations of images and text prompts
     # the image dataset is quite short, so we repeat it to match the length of the text prompt dataset
