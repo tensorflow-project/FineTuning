@@ -327,7 +327,7 @@ class StableDiffusionFineTuner(keras.Model):
             timesteps = tf.random.uniform(
                 (batch_dim,),
                 minval=0,
-                maxval=noise_scheduler.train_timesteps,
+                maxval=self.noise_scheduler.train_timesteps,
                 dtype=tf.int64,
             )
 
