@@ -431,7 +431,7 @@ def get_position_ids():
     return position_ids
 
 @tf.function
-def textual_inversion(model, noise_scheduler, data):
+def textual_inversion(model, noise_scheduler, data, new_image_encoder, optimizer):
     """Performs textual inversion using a given model and noise scheduler. Uses a gradient tape to calculate the mean squared error between predicted noise and actual noise,
      uses this loss to update the weights of the text encoder with the goal of only training the embedding of the placeholder token
 
@@ -446,22 +446,7 @@ def textual_inversion(model, noise_scheduler, data):
     """
     # Remove the top layer from the encoder, which cuts off the variance and only returns the mean
     ### we make the encoder more efficient while still preserving the most important features
-    training_image_encoder = keras.Model(
-        model.image_encoder.input,
-        model.image_encoder.layers[-2].output,
-    )
     
-    
-    #EPOCHS = 50
-    ### learning rate decays depending on the number of epochs to avoid convergence issues in few epochs 
-    ### in the originial tutorial a scheduler is used but we experienced to have better results without a scheduler
-    """learning_rate = keras.optimizers.schedules.CosineDecay(
-        initial_learning_rate=1e-4, decay_steps=train_ds.cardinality() * EPOCHS
-    )"""
-    ### inizialize the optimizer
-    optimizer = tf.keras.optimizers.Adam(
-        weight_decay=0.004, learning_rate=1e-4, epsilon=1e-8, global_clipnorm=10
-    )
 
     images, prompt_embeddings = data
 
@@ -554,7 +539,7 @@ def get_embedding(token, stable_diffusion):
 
     return embedding
 
-def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_diffusion, noise_scheduler):
+def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_diffusion, noise_scheduler, new_text_encoder, optimizer):
     """Trains the Stable Diffusion model using the given dataset for the specified number of epochs.
     For each batch in the dataset, a textual inversion is computed using the trained model.
     After each epoch, the embedding of the placeholder token is retrieved and its cosine similarity with the broccoli
@@ -575,7 +560,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_di
     ### Wrap the dataset iterator with tqdm to show progress
         for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
             # Compute the forward pass of the model
-            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch)
+            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch, new_text_encoder=new_text_encoder, optimizer=optimizer)
 
         ### Compute the embedding of the placeholder token and the cosine similarity
         ### with the broccoli emoji embedding
