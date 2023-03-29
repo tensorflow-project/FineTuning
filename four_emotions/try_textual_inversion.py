@@ -431,7 +431,7 @@ def get_position_ids():
     return position_ids
 
 @tf.function
-def textual_inversion(model, noise_scheduler, data, new_image_encoder, optimizer):
+def textual_inversion(model, noise_scheduler, data, training_image_encoder, optimizer):
     """Performs textual inversion using a given model and noise scheduler. Uses a gradient tape to calculate the mean squared error between predicted noise and actual noise,
      uses this loss to update the weights of the text encoder with the goal of only training the embedding of the placeholder token
 
