@@ -560,7 +560,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_di
     ### Wrap the dataset iterator with tqdm to show progress
         for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
             # Compute the forward pass of the model
-            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch, new_image_encoder=new_image_encoder, optimizer=optimizer)
+            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch, training_image_encoder=new_image_encoder, optimizer=optimizer)
 
         ### Compute the embedding of the placeholder token and the cosine similarity
         ### with the broccoli emoji embedding
