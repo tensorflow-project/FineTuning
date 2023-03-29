@@ -539,7 +539,7 @@ def get_embedding(token, stable_diffusion):
 
     return embedding
 
-def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_diffusion, noise_scheduler, new_text_encoder, optimizer):
+def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_diffusion, noise_scheduler, new_image_encoder, optimizer):
     """Trains the Stable Diffusion model using the given dataset for the specified number of epochs.
     For each batch in the dataset, a textual inversion is computed using the trained model.
     After each epoch, the embedding of the placeholder token is retrieved and its cosine similarity with the broccoli
@@ -560,7 +560,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_di
     ### Wrap the dataset iterator with tqdm to show progress
         for batch in tqdm(data, desc=f"Epoch {i+1}/{epoch}"):
             # Compute the forward pass of the model
-            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch, new_text_encoder=new_text_encoder, optimizer=optimizer)
+            loss = textual_inversion(model=stable_diffusion, noise_scheduler=noise_scheduler, data=batch, new_image_encoder=new_image_encoder, optimizer=optimizer)
 
         ### Compute the embedding of the placeholder token and the cosine similarity
         ### with the broccoli emoji embedding
