@@ -469,7 +469,7 @@ def textual_preprocessing(stable_diffusion):
 
 
 
-def percentage_emoji(percent = 0.5, stable_diffusion):
+def percentage_emoji(stable_diffusion, percent = 0.5):
     """Replaces a portion of the token embeddings in a StableDiffusion model's text encoder with emoji embeddings.
 
     The function takes a percentage value `percent` between 0 and 1 and computes a weighted sum of the original token
