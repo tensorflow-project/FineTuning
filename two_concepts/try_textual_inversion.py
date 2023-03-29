@@ -434,6 +434,20 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
 
     test_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
     test_weights = test_weights[0]
+    
+    # Get len of .vocab instead of tokenizer
+    new_vocab_size = len(stable_diffusion.tokenizer.vocab)
+
+    # Have to set download_weights False so we can initialize the weights ourselves
+    ### create a new text encoder 
+    new_encoder = txt.TextEncoder(
+        txt.MAX_PROMPT_LENGTH,
+        vocab_size = new_vocab_size,
+        download_weights = False,
+    )
+
+    ### set the layer that only encodes the position of tokens in the prompts to trainable = False
+    new_encoder.layers[2].position_embedding.trainable = False
 
     ### we set the weights of the new_encoder to the same as in the old text_encoder except from the embedding layer
     for index, layer in enumerate(stable_diffusion.text_encoder.layers):
