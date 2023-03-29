@@ -114,7 +114,7 @@ def assemble_image_dataset(urls):
 MAX_PROMPT_LENGTH = 77
 
 
-def pad_embedding(embedding):
+def pad_embedding(embedding, stable_diffusion):
     """Pads the input embedding with the end-of-text token to ensure that it has the same length as the maximum prompt length.
 
     Args:
@@ -128,7 +128,7 @@ def pad_embedding(embedding):
     )
 
 
-def assemble_text_dataset(prompts, placeholder_token):
+def assemble_text_dataset(prompts, placeholder_token, stable_diffusion):
     """Creates a text dataset consisting of prompt embeddings. 
     
     Args:
@@ -143,14 +143,14 @@ def assemble_text_dataset(prompts, placeholder_token):
     
     ### prompts are tokenized and encoded and then added to the embedding
     embeddings = [stable_diffusion.tokenizer.encode(prompt) for prompt in prompts]
-    embeddings = [np.array(pad_embedding(embedding)) for embedding in embeddings]
+    embeddings = [np.array(pad_embedding(embedding, stable_diffusion)) for embedding in embeddings]
     
     ### creates a dataset consisting of the different prompt embeddings and shuffles it
     text_dataset = tf.data.Dataset.from_tensor_slices(embeddings)
     text_dataset = text_dataset.shuffle(100, reshuffle_each_iteration=True)
     return text_dataset
     
-def assemble_dataset(urls, prompts, placeholder_token):
+def assemble_dataset(urls, prompts, placeholder_token, stable_diffusion):
     """ Assembles a TensorFlow Dataset containing pairs of images and text prompts.
 
     Args:
@@ -175,7 +175,7 @@ def assemble_dataset(urls, prompts, placeholder_token):
     text_dataset = text_dataset.repeat(5)
     return tf.data.Dataset.zip((image_dataset, text_dataset))    
     
-def get_embedding(token):
+def get_embedding(token, stable_diffusion):
     """Encodes a given token into a vector embedding using a pre-trained text encoder model.
 
     Args:
