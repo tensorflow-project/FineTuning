@@ -484,7 +484,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
 
 
 
-def percentage_emoji(stable_diffusion, percent = 0.5):
+def percentage_emoji(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined, percent = 0.5):
     """Replaces a portion of the token embeddings in a StableDiffusion model's text encoder with emoji embeddings.
 
     The function takes a percentage value `percent` between 0 and 1 and computes a weighted sum of the original token
@@ -497,6 +497,7 @@ def percentage_emoji(stable_diffusion, percent = 0.5):
     Returns:
     - None
     """
+    
     placeholder_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_combined)[1]
     broccoli_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_broccoli)[1]
     emoji_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_emoji)[1]
