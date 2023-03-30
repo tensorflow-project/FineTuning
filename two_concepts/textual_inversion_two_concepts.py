@@ -486,7 +486,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
 
 def create_dataset(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji):
     ### create a dataset consisting of broccoli stickers prompts
-    broccoli_ds = txt.assemble_dataset(
+    broccoli_ds = assemble_dataset(
         urls = [
             "https://i.imgur.com/9zAwPyt.jpg",
             "https://i.imgur.com/qCNFRl4.jpg",
@@ -522,7 +522,7 @@ def create_dataset(stable_diffusion, placeholder_token_broccoli, placeholder_tok
     )  
 
     ### create a dataset consisting of happy emojis and happy prompts
-    emoji_ds = txt.assemble_dataset(
+    emoji_ds = assemble_dataset(
         urls = [
             "https://i.imgur.com/BLLMggR.png",
             "https://i.imgur.com/PPQ2UtM.png",
