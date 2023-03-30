@@ -585,7 +585,7 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_di
         cosine_similarity.append(cosine_sim(get_embedding("broccoli", stable_diffusion), emb))
         
         ### visualize the development of the images by generating images with a fixed seed
-        generated = model.text_to_image(f"a happy {placeholder_token}.", batch_size=3, num_steps=30, seed=2704)
+        generated = model.text_to_image(f"a {placeholder_token} in love.", batch_size=1, num_steps=30, seed=2332)
         plot_images(generated)
 
 def textual_preprocessing(stable_diffusion, placeholder_token):
