@@ -119,6 +119,7 @@ def pad_embedding(embedding, stable_diffusion):
 
     Args:
     - embedding (list): A list of tokens representing the input embedding
+    - stable_diffusion (object): An instance of the stable diffusion class, which includes a tokenizer with an end-of-text token.
 
     Returns:
     - padded_embedding (list): A list of tokens representing the padded input embedding
