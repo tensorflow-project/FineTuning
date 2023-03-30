@@ -119,8 +119,7 @@ def pad_embedding(embedding, stable_diffusion):
 
     Args:
     - embedding (list): A list of tokens representing the input embedding
-    - stable_diffusion (object): An instance of the stable diffusion class, which includes a tokenizer with an end-of-text token.
-
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
     Returns:
     - padded_embedding (list): A list of tokens representing the padded input embedding
     """
@@ -135,6 +134,7 @@ def assemble_text_dataset(prompts, placeholder_token, stable_diffusion):
     Args:
     - prompts (str): A list of string prompts to be encoded and turned into embeddings
     - placeholder_token (str): our placeholder token
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
   
     Returns:
     - text_dataset: A text dataset containing the prompt embeddings
@@ -158,6 +158,7 @@ def assemble_dataset(urls, prompts, placeholder_token, stable_diffusion):
     - urls: A list of URLs representing the image dataset
     - prompts: A list of text prompts corresponding to the images
     - placeholder_token: A string token representing the location where the prompt text will be inserted in the final text
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
 
     Returns:
     - A TensorFlow Dataset object containing pairs of images and their corresponding text prompts
@@ -181,6 +182,7 @@ def get_embedding(token, stable_diffusion):
 
     Args:
     - token (str): A single word or token to encode into a vector embedding
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
 
     Returns:
     - A tensor vector representing the embedding for the given token
@@ -388,7 +390,18 @@ class StableDiffusionFineTuner(keras.Model):
         return {"loss": loss}
      
 def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
-    """Preprocesses the different needed models in order to apply textual inversion on it
+    """Preprocesses the different models for textual inversion. The function adds new placeholder tokens to the stable_diffusion model and 
+       initializes embeddings for them. It also sets the appropriate layers of the stable_diffusion model to trainable or non-trainable, 
+       depending on whether they need to be fine-tuned during the textual inversion process.
+
+    Args:
+        - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+        - placeholder_token_broccoli (str): The placeholder token for broccoli sticker
+        - placeholder_token_emoji (str): The placehoder token for emoji
+        - placeholder_token_combined (str): The placeholder token of broccoli sticker token and emoji token combined
+
+    Returns:
+        None
     """
   
     ### add the new placeholder tokens to the stable_diffusion model and initialize the embeddings for it
@@ -411,6 +424,18 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
 
 
 def create_dataset(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji):
+    """
+    Assembles a dataset consisting of prompts and their corresponding images for training the stable diffusion model.
+
+    Args:
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    - placeholder_token_broccoli (str): The placeholder token for broccoli stickers.
+    - placeholder_token_emoji (str): The placeholder token for happy emojis.
+
+    Returns:
+    - train_ds (tf.data.Dataset): A dataset containing the assembled prompts and images.
+    """
+    
     ### create a dataset consisting of broccoli stickers prompts
     broccoli_ds = assemble_dataset(
         urls = [
