@@ -397,8 +397,8 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
     Args:
         - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
         - placeholder_token_broccoli (str): The placeholder token for broccoli sticker
-        - placeholder_token_emoji (str): The placehoder token for emoji
-        - placeholder_token_combined (str): The placeholder token of broccoli sticker token and emoji token combined
+        - placeholder_token_emoji (str): The placehoder token for happy emoji
+        - placeholder_token_combined (str): The placeholder token of broccoli sticker token and happy emoji token combined
 
     Returns:
         None
@@ -522,12 +522,15 @@ def percentage_emoji(stable_diffusion, placeholder_token_broccoli, placeholder_t
     combined weights are then used to replace the last row of the token embedding matrix in the text encoder.
 
     Args:
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    - placeholder_token_broccoli (str): The placeholder token for broccoli stickers
+    - placeholder_token_emoji (str): The placeholder token for happy emojis
+    - placeholder_token_combined (str): The placeholder token of broccoli sticker token and happy emoji token combined
     - percent (float): The percentage of emoji embeddings to use, as a float between 0 and 1
 
     Returns:
     - None
     """
-    
     placeholder_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_combined)[1]
     broccoli_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_broccoli)[1]
     emoji_tokenized = stable_diffusion.tokenizer.encode(placeholder_token_emoji)[1]
@@ -549,7 +552,7 @@ def cosine_sim(e1,e2):
     - e2 (array): Second vector
 
     Returns:
-    - float: The cosine similarity between the two vectors
+    - sim (float): The cosine similarity between the two vectors
     """
     sim = dot(e1, e2)/(norm(e1)*norm(e2))
     return sim
@@ -599,6 +602,18 @@ def image_generation(prompt, drive_folder, number, seed=None):
             
             
 def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
+    
+     """ The function adds custom tokens to the tokenizer of the stable_diffusion model, and adjusts the
+     weights of the model's text_encoder to include the new tokens.
+
+    Args:
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    - placeholder_token_broccoli (str): The placeholder token for broccoli stickers
+    - placeholder_token_emoji (str): The placeholder token for happy emojis
+    - placeholder_token_combined (str): The placeholder token of broccoli sticker token and happy emoji token combined
+
+    Returns: None
+    """
 
     ### Add our placeholder_tokens to our stable_diffusion Model
     stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
@@ -679,46 +694,46 @@ def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token
     
     
     
-    def image_generation(prompt, drive_folder, number, stable_diffusion, seed=None, number_steps = 30):
-        """Generates an image using stable diffusion model by passing a string with a placeholder token. 
-        The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
+def image_generation(prompt, drive_folder, number, stable_diffusion, seed=None, number_steps = 30):
+    """Generates an image using stable diffusion model by passing a string with a placeholder token. 
+    The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
 
-        Args:
-        - prompt (str): The prompt used for generating the image
-        - drive_folder (str): The path to the Google Drive folder where the image will be saved
-        - number (int): How many images are to be generated
-        - stable_diffusion (StableDiffusion obj): the model used for generating the image
-        - seed (int): The seed for image generation. Defaults to None
-        - number_steps (int): number of timesteps for generating image
+    Args:
+    - prompt (str): The prompt used for generating the image
+    - drive_folder (str): The path to the Google Drive folder where the image will be saved
+    - number (int): How many images are to be generated
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    - seed (int): The seed for image generation. Defaults to None
+    - number_steps (int): number of timesteps for generating image
 
-        Returns:
-        - None
-        """
-        ### get the number of the last image generated, to ensure each picture gets a different name
-        i_file = os.path.join(drive_folder, 'i.txt')
-        if os.path.isfile(i_file):
-            with open(i_file, 'r') as f:
-                i = int(f.read())
-        else:
-            i = 0
+    Returns:
+    - None
+    """
+    ### get the number of the last image generated, to ensure each picture gets a different name
+    i_file = os.path.join(drive_folder, 'i.txt')
+    if os.path.isfile(i_file):
+        with open(i_file, 'r') as f:
+            i = int(f.read())
+    else:
+        i = 0
 
-        for j in range(number):
+    for j in range(number):
 
-            generated = stable_diffusion.text_to_image(
-            prompt, batch_size=1, num_steps=number_steps, seed=seed)
-            broc = generated[0]
+        generated = stable_diffusion.text_to_image(
+        prompt, batch_size=1, num_steps=number_steps, seed=seed)
+        broc = generated[0]
 
-            ### convert the array generated from our stable diffusion model into a picture
-            broc = Image.fromarray(broc, mode='RGB')
+        ### convert the array generated from our stable diffusion model into a picture
+        broc = Image.fromarray(broc, mode='RGB')
 
-            broc.save(f'image_{i}.jpg')
+        broc.save(f'image_{i}.jpg')
 
-            ### save the picture to Google Drive
-            local_path = f'image_{i}.jpg'
-            drive_path = os.path.join(drive_folder, f'image_{i}.jpg')  # Use f-string to include variable in file name
-            shutil.copy(local_path, drive_path)
+        ### save the picture to Google Drive
+        local_path = f'image_{i}.jpg'
+        drive_path = os.path.join(drive_folder, f'image_{i}.jpg')  # Use f-string to include variable in file name
+        shutil.copy(local_path, drive_path)
 
-            ### store the value of i in the file, to ensure no picture will have the same name
-            i += 1
-            with open(i_file, 'w') as f:
-                f.write(str(i))
+        ### store the value of i in the file, to ensure no picture will have the same name
+        i += 1
+        with open(i_file, 'w') as f:
+            f.write(str(i))
