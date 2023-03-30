@@ -614,7 +614,6 @@ def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token
 
     Returns: None
     """
-
     ### Add our placeholder_tokens to our stable_diffusion Model
     stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
     stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
