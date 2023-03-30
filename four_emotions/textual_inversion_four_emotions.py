@@ -122,6 +122,7 @@ def pad_embedding(embedding, stable_diffusion):
 
     Args:
     - embedding (list): A list of tokens representing the input embedding
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
 
     Returns:
     - padded_embedding (list): A list of tokens representing the padded input embedding
@@ -137,6 +138,7 @@ def assemble_text_dataset(prompts, placeholder_token, stable_diffusion):
     Args:
     - prompts (str): A list of string prompts to be encoded and turned into embeddings
     - placeholder_token (str): our placeholder token
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
   
     Returns:
     - text_dataset: A text dataset containing the prompt embeddings
@@ -161,6 +163,7 @@ def assemble_dataset(urls, prompts, placeholder_token, stable_diffusion):
     - urls: A list of URLs representing the image dataset
     - prompts: A list of text prompts corresponding to the images
     - placeholder_token: A string token representing the location where the prompt text will be inserted in the final text
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
 
     Returns:
     - A TensorFlow Dataset object containing pairs of images and their corresponding text prompts
@@ -180,7 +183,20 @@ def assemble_dataset(urls, prompts, placeholder_token, stable_diffusion):
     return tf.data.Dataset.zip((image_dataset, text_dataset))
 
 def create_dataset(stable_diffusion, placeholder_token):
-    ### create a dataset consisting of happy broccoli stickers and happy prompts
+    """Creates four datasets of images and corresponding prompts, each with a different emotion. The datasets include:
+
+    - happy_ds: A dataset of images and prompts related to happiness
+    - love_ds: A dataset of images and prompts related to love
+    - sad_ds: A dataset of images and prompts related to sadness
+    - angry_ds: A dataset of images and prompts related to anger
+
+    Args:
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    - placeholder_token (str): A string used as a placeholder token in the prompts
+
+    Returns:
+    - Tuple[Dataset, Dataset, Dataset, Dataset]: A tuple of four datasets
+    """
     happy_ds = assemble_dataset(
         urls = [
             "https://i.imgur.com/9zAwPyt.jpg",
@@ -216,7 +232,6 @@ def create_dataset(stable_diffusion, placeholder_token):
         stable_diffusion = stable_diffusion
     )
 
-    ### create a dataset consisting of broccoli in love stickers and matching prompts
     love_ds = assemble_dataset(
         urls = [
             "https://i.imgur.com/hFqqp3p.jpg",
@@ -258,7 +273,6 @@ def create_dataset(stable_diffusion, placeholder_token):
         stable_diffusion = stable_diffusion
     )
 
-    ### create a dataset consisting of sad broccoli stickers and matching prompts
     sad_ds = assemble_dataset(
         urls = [
             "https://i.imgur.com/hlkuxBX.jpg",
@@ -351,7 +365,7 @@ def create_dataset(stable_diffusion, placeholder_token):
 
 
 def traverse_layers(layer):
-    """ Traverses the layers and embedding attributes of a layer
+    """ Traverses the layers and embedding attributes of a layer.
 
     Args:
     - layer: A text encoder layer
@@ -369,7 +383,7 @@ def traverse_layers(layer):
 
 
 def sample_from_encoder_outputs(outputs):
-    """Returns a random sample from the embedding distribution given the mean and log variance tensors
+    """Returns a random sample from the embedding distribution given the mean and log variance tensors.
 
     Args:
     - outputs (tensor): A tensor of shape (batch_size, embedding_dim*2), where the first embedding_dim values correspond to the mean of the distribution, 
@@ -416,7 +430,7 @@ def get_timestep_embedding(timestep, dim=320, max_period=10000):
 #### used for hidden state (output of text encoder)
 def get_position_ids():
     """returns position IDs for the transformer model,
-        the IDs range from 0 to MAX_PROMPT_LENGTH-1
+        the IDs range from 0 to MAX_PROMPT_LENGTH-1.
 
     Returns:
     - position_ids (tf.Tensor): A tensor of shape (1, MAX_PROMPT_LENGTH) containing the position IDs
@@ -433,7 +447,7 @@ def get_position_ids():
 @tf.function
 def textual_inversion(model, noise_scheduler, data, training_image_encoder, optimizer):
     """Performs textual inversion using a given model and noise scheduler. Uses a gradient tape to calculate the mean squared error between predicted noise and actual noise,
-     uses this loss to update the weights of the text encoder with the goal of only training the embedding of the placeholder token
+     uses this loss to update the weights of the text encoder with the goal of only training the embedding of the placeholder token.
 
     Arguments:
     - model: A model that takes in noisy latents, timestep embeddings, and the output of the text encoder, and predicts noise
@@ -527,6 +541,7 @@ def get_embedding(token, stable_diffusion):
 
     Args:
     - token (str): A single word or token to encode into a vector embedding
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
 
     Returns:
     - A tensor vector representing the embedding for the given token
@@ -552,7 +567,8 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_di
     - sticker_embedding (list): A list to store embeddings of the placeholder token after each epoch
     - cosine_similarity (list): A list to store cosine similarities between the embeddings of the placeholder token and
       the broccoli emoji embedding after each epoch
-
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    
     Returns:
     - None
     """
@@ -573,7 +589,14 @@ def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_di
         plot_images(generated)
 
 def textual_preprocessing(stable_diffusion, placeholder_token):
-    """Preprocesses the different needed models in order to apply textual inversion on it
+    """Preprocesses text data in order to fine-tune an existing Stable Diffusion model with a new concept represented by a placeholder token.
+
+    Args:
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    - placeholder_token (str): The placeholder token that will represent the new concept
+
+    Returns:
+    - None
     """
   
     ### Add our placeholder_token to our stable_diffusion Model
@@ -670,7 +693,7 @@ def image_generation(prompt, drive_folder, number, stable_diffusion, seed=None, 
     - prompt (str): The prompt used for generating the image
     - drive_folder (str): The path to the Google Drive folder where the image will be saved
     - number (int): How many images are to be generated
-    - stable_diffusion (StableDiffusion obj): The model used for generating the image
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
     - seed (int): The seed for image generation. Defaults to None
     - number_steps (int): number of timesteps for generating image
 
@@ -707,6 +730,15 @@ def image_generation(prompt, drive_folder, number, stable_diffusion, seed=None, 
             f.write(str(i))
             
 def adding_token(stable_diffusion, placeholder_token):
+    """Adds a new token to the `stable_diffusion` model's tokenizer and updates its text encoder with the new token's embedding.
+
+    Args:
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    - placeholder_token (str): A string representing the new token to be added to the model's tokenizer
+
+    Returns:
+    - None
+    """
     ### Add our placeholder_token to our stable_diffusion Model
     stable_diffusion.tokenizer.add_tokens(placeholder_token)
 
