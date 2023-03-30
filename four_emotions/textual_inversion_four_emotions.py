@@ -555,20 +555,20 @@ def get_embedding(token, stable_diffusion):
     return embedding
 
 def training(epoch, model, data, sticker_embedding, cosine_similarity, stable_diffusion, noise_scheduler, new_image_encoder, optimizer, placeholder_token):
-    """Trains the Stable Diffusion model using the given dataset for the specified number of epochs.
-    For each batch in the dataset, a textual inversion is computed using the trained model.
-    After each epoch, the embedding of the placeholder token is retrieved and its cosine similarity with the broccoli
-    emoji embedding is computed and stored in a list.
-
+    """Trains the Stable Diffusion model using the given dataset for the specified number of epochs. For each batch in the dataset, the textual inversion is computed using the trained model. After each epoch, the embedding of the placeholder token is retrieved, and its cosine similarity with the broccoli emoji embedding is computed and stored in a list.
+    
     Args:
     - epoch (int): The number of epochs to train the model for
     - model (keras.Model): The Stable Diffusion model to be trained
     - data (tf.data.Dataset): The dataset to use for training
     - sticker_embedding (list): A list to store embeddings of the placeholder token after each epoch
-    - cosine_similarity (list): A list to store cosine similarities between the embeddings of the placeholder token and
-      the broccoli emoji embedding after each epoch
+    - cosine_similarity (list): A list to store cosine similarities between the embeddings of the placeholder token and the broccoli emoji embedding after each epoch
     - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
-    
+    - noise_scheduler (function): A function that schedules the amount of noise to be added to the text during training
+    - new_image_encoder (ImageEncoder): The image encoder to use for training
+    - optimizer (tf.keras.optimizers.Optimizer): The optimizer to use for training
+    - placeholder_token (str): The placeholder token representing the new concept to be fine-tuned
+
     Returns:
     - None
     """
