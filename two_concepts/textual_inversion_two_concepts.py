@@ -561,7 +561,7 @@ def cosine_sim(e1,e2):
             
 def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
     
-     """ The function adds custom tokens to the tokenizer of the stable_diffusion model, and adjusts the
+    """ The function adds custom tokens to the tokenizer of the stable_diffusion model, and adjusts the
      weights of the model's text_encoder to include the new tokens.
 
     Args:
