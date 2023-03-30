@@ -558,48 +558,6 @@ def cosine_sim(e1,e2):
     return sim
  
      
-def image_generation(prompt, drive_folder, number, seed=None):
-    """Generates an image using stable diffusion model by passing a string with a placeholder token. 
-    The generated image is saved as a JPG file and then copied to a Google Drive folder. A counter is used to ensure unique file names. 
-    
-    Args:
-    - prompt (str): The prompt used for generating the image
-    - drive_folder (str): The path to the Google Drive folder where the image will be saved
-    - number (int): How many images are to be generated
-    - seed (int): an optional seed for the random number generator, default is None
-    
-    Returns:
-    - None
-    """
-    ### get the number of the last image generated, to ensure each picture gets a different name
-    i_file = os.path.join(drive_folder, 'i.txt')
-    if os.path.isfile(i_file):
-        with open(i_file, 'r') as f:
-            i = int(f.read())
-    else:
-        i = 0
-        
-    for j in range(number):
-
-        generated = stable_diffusion.text_to_image(
-        prompt, batch_size=1,  num_steps=25, seed=seed )
-        broc = generated[0]
-
-        ### convert the array generated from our stable diffusion model into a picture
-        broc = Image.fromarray(broc, mode='RGB')
-
-        broc.save(f'image_{i}.jpg')
-
-        ### save the picture to Google Drive
-        local_path = f'image_{i}.jpg'
-        drive_path = os.path.join(drive_folder, f'image_{i}.jpg')  # Use f-string to include variable in file name
-        shutil.copy(local_path, drive_path)
-
-        ### store the value of i in the file, to ensure no picture will have the same name
-        i += 1
-        with open(i_file, 'w') as f:
-            f.write(str(i))
-            
             
 def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
     
