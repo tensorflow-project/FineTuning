@@ -599,7 +599,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token):
     - None
     """
   
-    ### Add our placeholder_token to our stable_diffusion Model
+    """### Add our placeholder_token to our stable_diffusion Model
     stable_diffusion.tokenizer.add_tokens(placeholder_token)
 
     ### defining concept we want to build our new concept on
@@ -651,7 +651,8 @@ def textual_preprocessing(stable_diffusion, placeholder_token):
     ### set the stable_diffusion text encoder to our new_encoder and compile it
     ### thus the stable_diffusion.text_encoder has the adjusted weights
     stable_diffusion._text_encoder = new_encoder
-    stable_diffusion._text_encoder.compile(jit_compile=True)
+    stable_diffusion._text_encoder.compile(jit_compile=True)"""
+    adding_token(stable_diffusion, placeholder_token)
 
 
     ### we only train the encoder as we want to fine-tune the embeddings
