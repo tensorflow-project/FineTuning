@@ -388,7 +388,97 @@ class StableDiffusionFineTuner(keras.Model):
         ### apply the gradients to the trainable weights of the encoder and thus only training the placeholder token's embedding
         self.optimizer.apply_gradients(zip(grads, trainable_weights))
         return {"loss": loss}
-     
+    
+def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
+    
+    """ The function adds custom tokens to the tokenizer of the stable_diffusion model, and adjusts the
+     weights of the model's text_encoder to include the new tokens.
+
+    Args:
+    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
+    - placeholder_token_broccoli (str): The placeholder token for broccoli stickers
+    - placeholder_token_emoji (str): The placeholder token for happy emojis
+    - placeholder_token_combined (str): The placeholder token of broccoli sticker token and happy emoji token combined
+
+    Returns: None
+    """
+    ### Add our placeholder_tokens to our stable_diffusion Model
+    stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
+    stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
+    stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
+
+    ### defining concept we want to build our new concept on
+    tokenized_initializer = stable_diffusion.tokenizer.encode("broccoli")[1]
+
+    ### get the embedding of our basis concept to clone it to our new placeholder's embedding
+    new_weights_broccoli = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer))
+
+    # The embedding layer is the 2nd layer in the text encoder
+    ### get the weights of the embedding layer
+    old_token_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
+    old_position_weights = stable_diffusion.text_encoder.layers[2].position_embedding.get_weights()
+
+    ### unpack the old weights
+    old_token_weights = old_token_weights[0]
+
+    ### old_token_weights has now the shape (vocab_size, embedding_dim)
+    ### expand the dimension to be able to concatenate it with old_token_weights
+    new_weights_broccoli = np.expand_dims(new_weights_broccoli, axis=0)
+    new_weights_broccoli = np.concatenate([old_token_weights, new_weights_broccoli], axis=0)
+
+
+    ### same for emoji token
+    ### defining concept we want to build our new concept on 
+    tokenized_initializer_emoji = stable_diffusion.tokenizer.encode("emoji")[1]
+
+    new_weights_emoji = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer_emoji))
+    new_weights_emoji = np.expand_dims(new_weights_emoji, axis=0)
+
+    ### concatenate the weights for the new embedding at the end of our weights (~)
+    new_weights = np.concatenate([new_weights_broccoli, new_weights_emoji], axis=0)
+
+    tokenized_combined = stable_diffusion.tokenizer.encode("broccoli sticker")[1]
+
+    ### combine new weights
+    new_weights_combined = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_combined))
+    new_weights_combined = np.expand_dims(new_weights_combined, axis=0)
+    new_weights = np.concatenate([new_weights, new_weights_combined], axis=0)
+
+    test_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
+    test_weights = test_weights[0]
+
+    # Get len of .vocab instead of tokenizer
+    new_vocab_size = len(stable_diffusion.tokenizer.vocab)
+
+    # Have to set download_weights False so we can initialize the weights ourselves
+    ### create a new text encoder 
+    new_encoder = TextEncoder(
+        MAX_PROMPT_LENGTH,
+        vocab_size = new_vocab_size,
+        download_weights = False,
+    )
+
+    ### set the layer that only encodes the position of tokens in the prompts to trainable = False
+    new_encoder.layers[2].position_embedding.trainable = False
+
+    ### we set the weights of the new_encoder to the same as in the old text_encoder except from the embedding layer
+    for index, layer in enumerate(stable_diffusion.text_encoder.layers):
+        # Layer 2 is the embedding layer, so we omit it from our weight-copying
+        if index == 2:
+            continue
+        new_encoder.layers[index].set_weights(layer.get_weights())
+
+    ### set the weights of the embedding layer according to our new_weights
+    new_encoder.layers[2].token_embedding.set_weights([new_weights])
+
+    ### set all weights of the other embeddings to the same values as in the initial text encoder
+    new_encoder.layers[2].position_embedding.set_weights(old_position_weights)
+
+    ### set the stable_diffusion text encoder to our new_encoder and compile it
+    ### thus the stable_diffusion.text_encoder has the adjusted weights
+    stable_diffusion._text_encoder = new_encoder
+    stable_diffusion._text_encoder.compile(jit_compile=True)
+         
 def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
     """Preprocesses the different models for textual inversion. The function adds new placeholder tokens to the stable_diffusion model and 
        initializes embeddings for them. It also sets the appropriate layers of the stable_diffusion model to trainable or non-trainable, 
@@ -559,96 +649,7 @@ def cosine_sim(e1,e2):
  
      
             
-def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined):
-    
-    """ The function adds custom tokens to the tokenizer of the stable_diffusion model, and adjusts the
-     weights of the model's text_encoder to include the new tokens.
 
-    Args:
-    - stable_diffusion (StableDiffusion): The Stable Diffusion model to be fine-tuned
-    - placeholder_token_broccoli (str): The placeholder token for broccoli stickers
-    - placeholder_token_emoji (str): The placeholder token for happy emojis
-    - placeholder_token_combined (str): The placeholder token of broccoli sticker token and happy emoji token combined
-
-    Returns: None
-    """
-    ### Add our placeholder_tokens to our stable_diffusion Model
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
-
-    ### defining concept we want to build our new concept on
-    tokenized_initializer = stable_diffusion.tokenizer.encode("broccoli")[1]
-
-    ### get the embedding of our basis concept to clone it to our new placeholder's embedding
-    new_weights_broccoli = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer))
-
-    # The embedding layer is the 2nd layer in the text encoder
-    ### get the weights of the embedding layer
-    old_token_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
-    old_position_weights = stable_diffusion.text_encoder.layers[2].position_embedding.get_weights()
-
-    ### unpack the old weights
-    old_token_weights = old_token_weights[0]
-
-    ### old_token_weights has now the shape (vocab_size, embedding_dim)
-    ### expand the dimension to be able to concatenate it with old_token_weights
-    new_weights_broccoli = np.expand_dims(new_weights_broccoli, axis=0)
-    new_weights_broccoli = np.concatenate([old_token_weights, new_weights_broccoli], axis=0)
-
-
-    ### same for emoji token
-    ### defining concept we want to build our new concept on 
-    tokenized_initializer_emoji = stable_diffusion.tokenizer.encode("emoji")[1]
-
-    new_weights_emoji = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_initializer_emoji))
-    new_weights_emoji = np.expand_dims(new_weights_emoji, axis=0)
-
-    ### concatenate the weights for the new embedding at the end of our weights (~)
-    new_weights = np.concatenate([new_weights_broccoli, new_weights_emoji], axis=0)
-
-    tokenized_combined = stable_diffusion.tokenizer.encode("broccoli sticker")[1]
-
-    ### combine new weights
-    new_weights_combined = stable_diffusion.text_encoder.layers[2].token_embedding(tf.constant(tokenized_combined))
-    new_weights_combined = np.expand_dims(new_weights_combined, axis=0)
-    new_weights = np.concatenate([new_weights, new_weights_combined], axis=0)
-
-    test_weights = stable_diffusion.text_encoder.layers[2].token_embedding.get_weights()
-    test_weights = test_weights[0]
-
-    # Get len of .vocab instead of tokenizer
-    new_vocab_size = len(stable_diffusion.tokenizer.vocab)
-
-    # Have to set download_weights False so we can initialize the weights ourselves
-    ### create a new text encoder 
-    new_encoder = TextEncoder(
-        MAX_PROMPT_LENGTH,
-        vocab_size = new_vocab_size,
-        download_weights = False,
-    )
-
-    ### set the layer that only encodes the position of tokens in the prompts to trainable = False
-    new_encoder.layers[2].position_embedding.trainable = False
-
-    ### we set the weights of the new_encoder to the same as in the old text_encoder except from the embedding layer
-    for index, layer in enumerate(stable_diffusion.text_encoder.layers):
-        # Layer 2 is the embedding layer, so we omit it from our weight-copying
-        if index == 2:
-            continue
-        new_encoder.layers[index].set_weights(layer.get_weights())
-
-    ### set the weights of the embedding layer according to our new_weights
-    new_encoder.layers[2].token_embedding.set_weights([new_weights])
-
-    ### set all weights of the other embeddings to the same values as in the initial text encoder
-    new_encoder.layers[2].position_embedding.set_weights(old_position_weights)
-
-    ### set the stable_diffusion text encoder to our new_encoder and compile it
-    ### thus the stable_diffusion.text_encoder has the adjusted weights
-    stable_diffusion._text_encoder = new_encoder
-    stable_diffusion._text_encoder.compile(jit_compile=True)
-    
     
     
 def image_generation(prompt, drive_folder, number, stable_diffusion, seed=None, number_steps = 30):
