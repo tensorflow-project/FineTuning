@@ -466,7 +466,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
     ### thus the stable_diffusion.text_encoder has the adjusted weights
     stable_diffusion._text_encoder = new_encoder
     stable_diffusion._text_encoder.compile(jit_compile=True)"""
-    adding_tokens(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined)
+    adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined)
 
 
     ### we only train the encoder as we want to fine-tune the embeddings
