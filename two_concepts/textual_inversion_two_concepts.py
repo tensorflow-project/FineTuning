@@ -390,7 +390,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
     """Preprocesses the different needed models in order to apply textual inversion on it
     """
   
-    ### Add our placeholder_tokens to our stable_diffusion Model
+    """### Add our placeholder_tokens to our stable_diffusion Model
     stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
     stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
     stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
@@ -465,7 +465,8 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
     ### set the stable_diffusion text encoder to our new_encoder and compile it
     ### thus the stable_diffusion.text_encoder has the adjusted weights
     stable_diffusion._text_encoder = new_encoder
-    stable_diffusion._text_encoder.compile(jit_compile=True)
+    stable_diffusion._text_encoder.compile(jit_compile=True)"""
+    adding_tokens(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined)
 
 
     ### we only train the encoder as we want to fine-tune the embeddings
@@ -483,7 +484,85 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
             layer.trainable = False
 
 
+def create_dataset(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji):
+    ### create a dataset consisting of broccoli stickers prompts
+    broccoli_ds = txt.assemble_dataset(
+        urls = [
+            "https://i.imgur.com/9zAwPyt.jpg",
+            "https://i.imgur.com/qCNFRl4.jpg",
+            "https://i.imgur.com/kPH9XIh.jpg",
+            "https://i.imgur.com/qy1k0QK.jpg",
+        ],
+        prompts = [
+            "a photo of a happy {}",
+            "a photo of {}",
+            "a photo of one {}",
+            "a photo of a nice {}",
+            "a good photo of a {}",
+            "a photo of the nice {}",
+            "a photo of a cool {}",
+            "a rendition of the {}",
+            "a nice sticker of a {}",
+            "a sticker of a {}",
+            "a sticker of a happy {}",
+            "a sticker of a lucky {}",
+            "a sticker of a lovely {}",
+            "a sticker of a {} in a positive mood",
+            "a pixar chracter of a satisfied {}",
+            "a disney character of a positive {}",
+            "a sticker of a delighted {}",
+            "a sticker of a joyful {}",
+            "a sticker of a cheerful {}",
+            "a drawing of a glad {}",
+            "a sticker of a merry {}",
+            "a sticker of a pleased {}",
+        ],
+        placeholder_token = placeholder_token_broccoli, 
+        stable_diffusion = stable_diffusion
+    )  
 
+    ### create a dataset consisting of happy emojis and happy prompts
+    emoji_ds = txt.assemble_dataset(
+        urls = [
+            "https://i.imgur.com/BLLMggR.png",
+            "https://i.imgur.com/PPQ2UtM.png",
+            "https://i.imgur.com/6je73G3.png",
+        ],
+        prompts = [
+            "a photo of a happy {}",
+            "a photo of {}",
+            "a photo of one {}",
+            "a photo of a nice {}",
+            "a good photo of a {}",
+            "a photo of the nice {}",
+            "a photo of a cool {}",
+            "a rendition of the {}",
+            "a nice emoji of a {}",
+            "an emoji of a {}",
+            "an emoji of a happy {}",
+            "an emoji of a lucky {}",
+            "an emoji of a lovely {}",
+            "an emoji of a {} in a positive mood",
+            "an emoji chracter of a satisfied {}",
+            "an emoji character of a positive {}",
+            "an emoji of a delighted {}",
+            "an emoji of a joyful {}",
+            "an emoji of a cheerful {}",
+            "an emoji of a glad {}",
+            "an emoji of a merry {}",
+            "an emoji of a pleased {}",
+        ],
+        placeholder_token = placeholder_token_emoji,
+        stable_diffusion = stable_diffusion
+    )
+
+    ### concatenate the different datasets
+    train_ds = emoji_ds.concatenate(broccoli_ds)
+    train_ds = train_ds.batch(1).shuffle(
+        train_ds.cardinality(), reshuffle_each_iteration=True)
+    
+    return train_ds
+    
 def percentage_emoji(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined, percent = 0.5):
     """Replaces a portion of the token embeddings in a StableDiffusion model's text encoder with emoji embeddings.
 
@@ -646,6 +725,8 @@ def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token
     ### thus the stable_diffusion.text_encoder has the adjusted weights
     stable_diffusion._text_encoder = new_encoder
     stable_diffusion._text_encoder.compile(jit_compile=True)
+    
+    
     
     def image_generation(prompt, drive_folder, number, stable_diffusion, seed=None, number_steps = 30):
     """Generates an image using stable diffusion model by passing a string with a placeholder token. 
