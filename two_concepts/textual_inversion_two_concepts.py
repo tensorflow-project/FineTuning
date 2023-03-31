@@ -512,14 +512,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
             
     ### set the layer that only encodes the position of tokens in the prompts to trainable = False
     new_encoder.layers[2].position_embedding.trainable = False
-
-### put all the different components of stable diffusion model into a list
-all_models = [
-    stable_diffusion.text_encoder,
-    stable_diffusion.diffusion_model,
-    stable_diffusion.decoder,
-]
-
+    
 def create_dataset(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji):
     """
     Assembles a dataset consisting of prompts and their corresponding images for training the stable diffusion model.
