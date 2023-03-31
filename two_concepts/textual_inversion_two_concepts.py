@@ -401,10 +401,6 @@ def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token
 
     Returns: None
     """
-    ### Add our placeholder_tokens to our stable_diffusion Model
-    #stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
-    #stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
-    #stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
 
     ### defining concept we want to build our new concept on
     tokenized_initializer = stable_diffusion.tokenizer.encode("broccoli")[1]
