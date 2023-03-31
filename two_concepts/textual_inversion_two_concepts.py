@@ -371,7 +371,7 @@ class StableDiffusionFineTuner(keras.Model):
         # of the slice(s) which contain the placeholder token.
         #######??index_of_placeholder_token = tf.reshape(tf.where(grads[0].indices == 49408), ())
         ### we only want to update the gradient of the placeholder token, therefore we create the tensor condition which has the value true for the index of the placeholder token (49408) and otherwise false
-        condition = ((grads[0].indices == 49408) or (grads[0].indices == 49409))
+        condition = tf.logical_or(grads[0].indices == 49408, grads[0].indices == 49409)
         ### add an extra dimension to later zero out the gradients for other tokens
         condition = tf.expand_dims(condition, axis=-1)
 
