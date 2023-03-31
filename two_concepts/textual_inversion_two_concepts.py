@@ -491,7 +491,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
     """
     
     ### add the new placeholder tokens to the stable_diffusion model and initialize the embeddings for it
-    adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined)
+    #adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined)
     
     new_encoder = stable_diffusion._text_encoder
     stable_diffusion._text_encoder.compile(jit_compile=True)
