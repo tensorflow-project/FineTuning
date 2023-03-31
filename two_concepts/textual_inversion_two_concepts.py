@@ -402,9 +402,9 @@ def adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token
     Returns: None
     """
     ### Add our placeholder_tokens to our stable_diffusion Model
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
-    stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
+    #stable_diffusion.tokenizer.add_tokens(placeholder_token_broccoli)
+    #stable_diffusion.tokenizer.add_tokens(placeholder_token_emoji)
+    #stable_diffusion.tokenizer.add_tokens(placeholder_token_combined)
 
     ### defining concept we want to build our new concept on
     tokenized_initializer = stable_diffusion.tokenizer.encode("broccoli")[1]
@@ -491,7 +491,7 @@ def textual_preprocessing(stable_diffusion, placeholder_token_broccoli, placehol
     """
     
     ### add the new placeholder tokens to the stable_diffusion model and initialize the embeddings for it
-    #adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined)
+    adding_token(stable_diffusion, placeholder_token_broccoli, placeholder_token_emoji, placeholder_token_combined)
     
     new_encoder = stable_diffusion._text_encoder
     stable_diffusion._text_encoder.compile(jit_compile=True)
