@@ -10,8 +10,9 @@ Original file is located at
 #!/usr/bin/env python
 # coding: utf-8
 
+import os
+os.system('pip install tensorflow-datasets==4.9.2 tensorflow-metadata==1.13.1')
 get_ipython().system('pip install -q git+https://github.com/keras-team/keras-cv.git')
-get_ipython().system('pip install -q tensorflow==2.11.0')
 get_ipython().system('pip install pyyaml h5py')
 
 ### clone our Github Repository
@@ -30,7 +31,6 @@ from tensorflow import keras
 import matplotlib.pyplot as plt
 from numpy import dot
 from numpy.linalg import norm
-import os
 import sys
 from google.colab import drive
 from PIL import Image
