@@ -15,10 +15,6 @@ os.system('pip install tensorflow-datasets==4.9.2 tensorflow-metadata==1.13.1')
 get_ipython().system('pip install -q git+https://github.com/keras-team/keras-cv.git')
 get_ipython().system('pip install pyyaml h5py')
 
-### clone our Github Repository
-#get_ipython().system('git clone https://github.com/tensorflow-project/FineTuning')
-#get_ipython().run_line_magic('cd', 'FineTuning/models')
-
 import math
 import random
 
