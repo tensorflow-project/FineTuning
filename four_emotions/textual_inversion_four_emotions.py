@@ -41,10 +41,6 @@ sys.path.append(os.path.abspath(py_file_location))
 
 
 ### import the different models from our Github repository
-#from text_encoder import TextEncoder
-#from decoder import Decoder
-#from diffusion_model import DiffusionModel
-#from stable_diffusion import StableDiffusion
 from models.text_encoder import TextEncoder
 from models.decoder import Decoder
 from models.diffusion_model import DiffusionModel
